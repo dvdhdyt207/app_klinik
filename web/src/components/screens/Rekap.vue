@@ -84,4 +84,10 @@ const isK = computed(() => k.rekapTab === 'kunjungan')
 .qb-unit { font-size: 10px; font-weight: 600; }
 .low-name { font-size: 14.5px; font-weight: 700; color: var(--ink); }
 .low-sub { font-size: 12px; color: var(--muted); }
+
+@media (min-width: 920px) {
+  .screen { padding: 8px 4px 24px; max-width: 760px; }
+  .title { font-size: 26px; }
+  .list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+}
 </style>

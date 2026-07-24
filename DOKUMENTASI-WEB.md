@@ -4,8 +4,8 @@ Recreate dari versi lama (Node/Express + Expo React Native) menjadi **website pe
 **backend Go** + **frontend Vue 3**, dengan **fungsionalitas sama persis**. Menyelesaikan
 masalah Expo Go SDK 57 (tidak perlu HP/native lagi — cukup browser).
 
-> Versi lama tetap ada sebagai referensi: `backend/` (Node) & `mobile/` (Expo).
-> Versi web baru: `server/` (Go) & `web/` (Vue). Lihat juga `DOKUMENTASI.md` (versi lama).
+> Stack lama (Node/Express + Expo React Native) sudah **dihapus** — digantikan
+> `server/` (Go) & `web/` (Vue).
 
 ## Stack
 

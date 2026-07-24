@@ -50,4 +50,10 @@ const d = computed(() => k.derived)
 .glabel { color: var(--muted2); font-weight: 700; }
 .vchips { margin-top: 11px; padding-top: 11px; border-top: 1px solid #eef2f7; display: flex; flex-wrap: wrap; gap: 6px; }
 .vchip { background: var(--fill); border-radius: 8px; padding: 5px 9px; font-size: 12px; font-weight: 600; color: #3b4a5e; }
+
+@media (min-width: 920px) {
+  .screen { padding: 8px 4px 24px; }
+  .title { font-size: 26px; }
+  .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; align-items: start; }
+}
 </style>

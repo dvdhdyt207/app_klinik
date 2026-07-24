@@ -18,17 +18,60 @@ const icons = {
 
 <template>
   <nav class="tabbar">
-    <button v-for="t in tabs" :key="t.key" class="tab" :class="{ active: k.screen === t.key }" @click="k.goScreen(t.key)">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-html="icons[t.key]" />
-      <span class="tlabel">{{ t.label }}</span>
-    </button>
+    <!-- brand (hanya desktop) -->
+    <div class="brand">
+      <div class="logo">P</div>
+      <div>
+        <div class="eyebrow">KLINIK</div>
+        <div class="bname">Bidan Pit</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button v-for="t in tabs" :key="t.key" class="tab" :class="{ active: k.screen === t.key }" @click="k.goScreen(t.key)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-html="icons[t.key]" />
+        <span class="tlabel">{{ t.label }}</span>
+      </button>
+    </div>
   </nav>
 </template>
 
 <style scoped>
+/* ---- mobile: bottom tab bar (default) ---- */
 .tabbar { display: flex; height: 66px; background: #fff; border-top: 1px solid var(--border); padding: 8px 6px 6px; flex-shrink: 0; }
+.brand { display: none; }
+.tabs { display: flex; flex: 1; }
 .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted2); }
 .tab.active { color: var(--accent); }
 .tlabel { font-size: 10.5px; font-weight: 700; }
+
+/* ---- desktop: sidebar kiri ---- */
+@media (min-width: 920px) {
+  .tabbar {
+    order: 1;
+    flex-direction: column;
+    height: 100%;
+    width: 244px;
+    padding: 22px 16px;
+    border-top: none;
+    border-right: 1px solid var(--border);
+    gap: 20px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 4px 8px 6px; }
+  .logo { width: 42px; height: 42px; border-radius: 13px; background: var(--accent); color: #fff; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+  .eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: 1.3px; color: var(--muted); }
+  .bname { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+
+  .tabs { flex-direction: column; flex: none; gap: 4px; }
+  .tab {
+    flex-direction: row; justify-content: flex-start; align-items: center;
+    gap: 13px; width: 100%; padding: 12px 14px; border-radius: 12px;
+    color: var(--label);
+  }
+  .tab:hover { background: var(--fill2); }
+  .tab.active { background: #eef4ff; color: var(--accent); }
+  .tab svg { width: 20px; height: 20px; }
+  .tlabel { font-size: 14.5px; font-weight: 700; }
+}
 </style>

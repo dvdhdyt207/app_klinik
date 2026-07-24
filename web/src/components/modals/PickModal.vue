@@ -45,7 +45,6 @@ const canCreate = computed(() => k.pickContext === 'stock' && q.value.length >= 
 </template>
 
 <style scoped>
-.fullmodal { position: absolute; inset: 0; z-index: 21; background: var(--app-bg); display: flex; flex-direction: column; animation: modal-in .2s ease; }
 .searchbar { padding: 14px 16px 10px; background: #fff; }
 .search { background: var(--fill2); }
 .body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 7px; }

@@ -71,6 +71,14 @@ a { color: var(--accent); text-decoration: none; }
 }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
+/* Modal layar-penuh (mobile). Di desktop di-override jadi dialog (lihat @media). */
+.fullmodal {
+  position: absolute; inset: 0; z-index: 20;
+  background: var(--app-bg);
+  display: flex; flex-direction: column;
+  animation: modal-in .2s ease;
+}
+
 /* Bidan App: kolom lebar-HP di tengah pada layar besar */
 .app-frame {
   position: relative;
@@ -80,3 +88,34 @@ a { color: var(--accent); text-decoration: none; }
   background: var(--app-bg); overflow: hidden;
 }
 .scroll-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+/* =================== DESKTOP / LAPTOP (>= 920px) =================== */
+@keyframes dialog-in {
+  from { opacity: .4; transform: translate(-50%, -47%) scale(.98); }
+  to   { opacity: 1;  transform: translate(-50%, -50%) scale(1); }
+}
+@media (min-width: 920px) {
+  body { background: var(--patient-bg); }
+
+  /* shell: sidebar kiri + area konten */
+  .app-frame {
+    max-width: none;
+    flex-direction: row;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .scroll-area { order: 2; }
+
+  /* konten dibatasi lebar & terpusat */
+  .content-wrap { max-width: 1080px; margin: 0 auto; padding: 12px 12px 44px; }
+
+  /* modal layar-penuh -> dialog terpusat + backdrop gelap (trik box-shadow) */
+  .fullmodal {
+    position: fixed; inset: auto;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: min(580px, 92vw); max-height: 86vh;
+    border-radius: 20px; overflow: hidden; z-index: 50;
+    box-shadow: 0 24px 60px rgba(16,22,30,.35), 0 0 0 100vmax rgba(16,22,30,.45);
+    animation: dialog-in .2s ease;
+  }
+}

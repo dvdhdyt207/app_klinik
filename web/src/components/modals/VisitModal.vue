@@ -54,7 +54,6 @@ function remove(i) { k.draft.items.splice(i, 1) }
 </template>
 
 <style scoped>
-.fullmodal { position: absolute; inset: 0; z-index: 20; background: var(--app-bg); display: flex; flex-direction: column; animation: modal-in .2s ease; }
 .body { flex: 1; overflow-y: auto; padding: 18px; }
 .mt { margin-top: 7px; } .mb { margin-bottom: 16px; }
 .agerow { display: flex; align-items: center; gap: 8px; }

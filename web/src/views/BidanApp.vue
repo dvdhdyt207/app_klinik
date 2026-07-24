@@ -28,10 +28,12 @@ const k = useKlinik()
       </button>
 
       <div class="scroll-area">
-        <Beranda v-if="k.screen === 'beranda'" />
-        <Kunjungan v-else-if="k.screen === 'kunjungan'" />
-        <Stok v-else-if="k.screen === 'stok'" />
-        <Rekap v-else-if="k.screen === 'rekap'" />
+        <div class="content-wrap">
+          <Beranda v-if="k.screen === 'beranda'" />
+          <Kunjungan v-else-if="k.screen === 'kunjungan'" />
+          <Stok v-else-if="k.screen === 'stok'" />
+          <Rekap v-else-if="k.screen === 'rekap'" />
+        </div>
       </div>
 
       <TabBar />

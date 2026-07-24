@@ -28,7 +28,6 @@ const d = computed(() => k.derived)
 </template>
 
 <style scoped>
-.fullmodal { position: absolute; inset: 0; z-index: 20; background: var(--app-bg); display: flex; flex-direction: column; animation: modal-in .2s ease; }
 .add { height: 36px; padding: 0 14px; border-radius: 18px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
 .plus { font-size: 18px; }
 .body { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }

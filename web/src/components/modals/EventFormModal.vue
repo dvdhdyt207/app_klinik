@@ -42,7 +42,6 @@ const canSave = computed(() => e.value && e.value.title.trim() && e.value.startD
 </template>
 
 <style scoped>
-.fullmodal { position: absolute; inset: 0; z-index: 22; background: var(--app-bg); display: flex; flex-direction: column; animation: modal-in .2s ease; }
 .body { flex: 1; overflow-y: auto; padding: 18px; }
 .mt { margin-top: 7px; } .mb { margin-bottom: 16px; }
 .allday { display: flex; align-items: center; justify-content: space-between; width: 100%; background: #fff; border: 1px solid var(--input-border); border-radius: 12px; padding: 13px 14px; margin-bottom: 16px; }

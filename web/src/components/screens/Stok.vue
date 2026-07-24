@@ -40,4 +40,10 @@ const d = computed(() => k.derived)
 .ln-cat { font-size: 12px; color: var(--muted); }
 .ln-qty { font-size: 16px; font-weight: 800; }
 .ln-unit { font-size: 11px; font-weight: 600; color: var(--muted); }
+
+@media (min-width: 920px) {
+  .screen { padding: 8px 4px 24px; }
+  .title { font-size: 26px; }
+  .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+}
 </style>
