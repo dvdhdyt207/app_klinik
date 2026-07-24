@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#dfe3ea;font-family:'Plus Jakarta Sans',system-ui,sans-serif;display:flex;justify-content:center;padding:28px 16px;min-height:100vh;box-sizing:border-box}
+  a{color:#2f6ce0}a:hover{color:#1f52b8}
+  *::-webkit-scrollbar{width:0;height:0}
+  input,button,select{font-family:inherit}
+  input:focus{outline:none}
+</style>
+</helmet>
+
+<x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+  <div style="position:relative;height:100%;background:#f5f8fc;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#16202e;overflow:hidden">
+
+    <!-- ================= SCROLLABLE SCREEN AREA ================= -->
+    <div style="position:absolute;inset:0 0 66px 0;overflow:auto">
+
+      <!-- ---------- BERANDA ---------- -->
+      <sc-if value="{{ isBeranda }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:20px 18px 20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.12em;color:#8a97a8;text-transform:uppercase">Klinik</div>
+              <div style="font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:2px">Bidan Pit</div>
+            </div>
+            <div style="width:42px;height:42px;border-radius:50%;background:#dbe6f7;display:flex;align-items:center;justify-content:center;font-weight:700;color:#2f6ce0">P</div>
+          </div>
+
+          <!-- status hero -->
+          <sc-if value="{{ bidanHadir }}" hint-placeholder-val="{{ true }}">
+            <div onClick="{{ openAway }}" style="background:#2f6ce0;border-radius:20px;padding:20px;color:#fff;box-shadow:0 12px 26px rgba(47,108,224,.28);cursor:pointer">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:12.5px;font-weight:600;opacity:.85">Status Bidan</div>
+                <div style="width:52px;height:30px;border-radius:16px;background:rgba(255,255,255,.32);position:relative;padding:3px;box-sizing:border-box"><div style="width:24px;height:24px;border-radius:50%;background:#fff;position:absolute;right:3px"></div></div>
+              </div>
+              <div style="font-size:20px;font-weight:800;margin-top:14px;letter-spacing:-.01em">Sedang di klinik</div>
+              <div style="font-size:12.5px;opacity:.8;margin-top:3px">Ketuk untuk atur status keluar</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ bidanTidak }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #e2e7ef;border-radius:20px;padding:20px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:12.5px;font-weight:600;color:#6b7688">Status Bidan</div>
+                <div onClick="{{ setHadir }}" style="width:52px;height:30px;border-radius:16px;background:#d6dbe4;position:relative;padding:3px;box-sizing:border-box;cursor:pointer"><div style="width:24px;height:24px;border-radius:50%;background:#fff;position:absolute;left:3px"></div></div>
+              </div>
+              <div style="font-size:20px;font-weight:800;margin-top:14px;letter-spacing:-.01em;color:#16202e">Tidak di klinik</div>
+              <sc-if value="{{ awayNote }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:13px;color:#5a6675;margin-top:5px;font-weight:600">{{ awayNote }}</div>
+              </sc-if>
+              <sc-if value="{{ hasAwayUntil }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:12px;background:#f6f8fc;border-radius:12px;padding:11px 13px">
+                  <span style="font-size:13px;color:#16202e;font-weight:700">Perkiraan kembali {{ awayUntilLabel }}</span>
+                  <span style="font-size:12px;color:#8a97a8;font-weight:600">{{ awayCountdown }}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noAwayUntil }}" hint-placeholder-val="{{ true }}">
+                <div style="margin-top:12px;background:#f6f8fc;border-radius:12px;padding:11px 13px;font-size:12.5px;color:#8a97a8;font-weight:600">Waktu kembali belum dipastikan</div>
+              </sc-if>
+              <div style="display:flex;gap:8px;margin-top:12px">
+                <div onClick="{{ extend15 }}" style="flex:1;text-align:center;padding:9px;border-radius:10px;background:#f0f4f9;color:#3b4a5e;font-size:12.5px;font-weight:700;cursor:pointer">+15 mnt</div>
+                <div onClick="{{ extend30 }}" style="flex:1;text-align:center;padding:9px;border-radius:10px;background:#f0f4f9;color:#3b4a5e;font-size:12.5px;font-weight:700;cursor:pointer">+30 mnt</div>
+                <div onClick="{{ openAway }}" style="flex:1;text-align:center;padding:9px;border-radius:10px;background:#f0f4f9;color:#3b4a5e;font-size:12.5px;font-weight:700;cursor:pointer">Ubah</div>
+              </div>
+              <div onClick="{{ setHadir }}" style="margin-top:10px;text-align:center;padding:13px;border-radius:12px;background:#1f9d57;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Saya sudah kembali</div>
+            </div>
+          </sc-if>
+
+          <a href="Status Bidan Web.dc.html" target="_blank" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;background:#eef4ff;border:1px solid #d9e5fb;border-radius:14px;padding:11px 14px;text-decoration:none">
+            <div style="display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:#3fbf8f;display:inline-block"></span><span style="font-size:12.5px;font-weight:600;color:#2f6ce0">Status ini tampil di halaman web pasien</span></div>
+            <span style="font-size:18px;color:#2f6ce0;line-height:1">&rsaquo;</span>
+          </a>
+
+          <!-- quick stats -->
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <div style="flex:1;background:#fff;border:1px solid #e7edf5;border-radius:14px;padding:13px 14px">
+              <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">{{ todayCount }}</div>
+              <div style="font-size:11.5px;color:#8a97a8;font-weight:600">Kunjungan hari ini</div>
+            </div>
+            <div style="flex:1;background:#fff;border:1px solid #e7edf5;border-radius:14px;padding:13px 14px">
+              <div style="font-size:22px;font-weight:800;letter-spacing:-.02em;color:#d64545">{{ lowCount }}</div>
+              <div style="font-size:11.5px;color:#8a97a8;font-weight:600">Obat menipis</div>
+            </div>
+          </div>
+
+          <!-- low stock -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:24px 2px 12px">
+            <div style="font-size:15px;font-weight:700">Stok menipis</div>
+            <div onClick="{{ goStok }}" style="font-size:12.5px;font-weight:600;color:#2f6ce0;cursor:pointer">Lihat stok</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ lowStock }}" as="m" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e7edf5;border-radius:14px;padding:12px 14px">
+                <div style="width:8px;height:8px;border-radius:50%;background:{{ m.color }}"></div>
+                <div style="flex:1"><div style="font-size:14px;font-weight:600">{{ m.name }}</div><div style="font-size:12px;color:#8a97a8">{{ m.cat }}</div></div>
+                <div style="font-size:15px;font-weight:800;color:{{ m.color }}">{{ m.qty }} <span style="font-size:11px;font-weight:600;color:#8a97a8">{{ m.unit }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:24px 2px 12px">
+            <div style="font-size:15px;font-weight:700">Jadwal &amp; agenda</div>
+            <div onClick="{{ openJadwal }}" style="font-size:12.5px;font-weight:600;color:#2f6ce0;cursor:pointer">Kelola</div>
+          </div>
+          <sc-if value="{{ hasEvents }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ upcomingEvents }}" as="e" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e7edf5;border-radius:14px;padding:12px 14px">
+                  <div style="width:8px;height:8px;border-radius:50%;background:{{ e.dot }}"></div>
+                  <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">{{ e.title }}</div><div style="font-size:12px;color:#8a97a8">{{ e.when }}</div></div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noEvents }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1.5px dashed #d3dce8;border-radius:14px;padding:18px;text-align:center;color:#9aa7b8;font-size:13px">Belum ada agenda mendatang</div>
+          </sc-if>
+
+          <div onClick="{{ openVisit }}" style="margin-top:22px;background:#16202e;color:#fff;border-radius:16px;padding:15px;display:flex;align-items:center;justify-content:center;gap:9px;font-size:15px;font-weight:700;cursor:pointer">
+            <span style="font-size:20px;line-height:1">+</span> Catat Kunjungan
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ---------- KUNJUNGAN ---------- -->
+      <sc-if value="{{ isKunjungan }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:20px 18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">Kunjungan</div>
+            <div onClick="{{ openVisit }}" style="width:40px;height:40px;border-radius:50%;background:#2f6ce0;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;cursor:pointer;box-shadow:0 6px 16px rgba(47,108,224,.3)">+</div>
+          </div>
+          <div style="font-size:13px;color:#8a97a8;margin-bottom:18px">{{ totalVisits }} total &middot; {{ todayCount }} hari ini</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ visits }}" as="v" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid #e7edf5;border-radius:16px;padding:14px 15px">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="width:40px;height:40px;border-radius:12px;background:#dbe6f7;color:#2f6ce0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px">{{ v.initial }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:15px;font-weight:700">{{ v.name }}</div>
+                    <div style="font-size:12.5px;color:#8a97a8">{{ v.meta }}</div>
+                  </div>
+                  <div style="font-size:11.5px;color:#8a97a8;font-weight:600;text-align:right">{{ v.dateLabel }}</div>
+                </div>
+                <sc-if value="{{ v.gejala }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:9px;font-size:12.5px;color:#5a6675;line-height:1.4"><span style="color:#9aa7b8;font-weight:700">Gejala:</span> {{ v.gejala }}</div>
+                </sc-if>
+                <div style="margin-top:11px;padding-top:11px;border-top:1px solid #eef2f7;display:flex;flex-wrap:wrap;gap:6px">
+                  <sc-for list="{{ v.chips }}" as="c" hint-placeholder-count="2">
+                    <div style="font-size:12px;font-weight:600;color:#3b4a5e;background:#f0f4f9;border-radius:8px;padding:5px 9px">{{ c }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ---------- STOK ---------- -->
+      <sc-if value="{{ isStok }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:20px 18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">Stok Obat</div>
+            <div onClick="{{ openPickStock }}" style="height:40px;padding:0 15px;border-radius:20px;background:#2f6ce0;color:#fff;display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px rgba(47,108,224,.3)"><span style="font-size:19px;line-height:1">+</span> Tambah</div>
+          </div>
+          <div style="font-size:13px;color:#8a97a8;margin-bottom:18px">{{ medCount }} jenis obat terdaftar</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ meds }}" as="m" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e7edf5;border-radius:14px;padding:12px 14px">
+                <div style="width:8px;height:8px;border-radius:50%;background:{{ m.dot }}"></div>
+                <div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:600">{{ m.name }}</div><div style="font-size:12px;color:#8a97a8">{{ m.cat }}</div></div>
+                <div style="text-align:right"><span style="font-size:16px;font-weight:800;color:{{ m.qtyColor }}">{{ m.qty }}</span> <span style="font-size:11px;font-weight:600;color:#8a97a8">{{ m.unit }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ---------- REKAP ---------- -->
+      <sc-if value="{{ isRekap }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:20px 18px">
+          <div style="font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:16px">Rekap</div>
+          <div style="display:flex;background:#e9eef5;border-radius:14px;padding:4px;margin-bottom:18px">
+            <div onClick="{{ setRekapKunjungan }}" style="flex:1;text-align:center;padding:9px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:{{ rk_bgK }};color:{{ rk_fgK }}">Kunjungan</div>
+            <div onClick="{{ setRekapStok }}" style="flex:1;text-align:center;padding:9px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:{{ rk_bgS }};color:{{ rk_fgS }}">Stok Menipis</div>
+          </div>
+
+          <sc-if value="{{ rekapIsKunjungan }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="display:flex;gap:10px;margin-bottom:14px">
+                <div style="flex:1;background:#16202e;color:#fff;border-radius:16px;padding:15px">
+                  <div style="font-size:26px;font-weight:800;letter-spacing:-.02em">{{ totalVisits }}</div>
+                  <div style="font-size:11.5px;opacity:.75;font-weight:600">Total kunjungan</div>
+                </div>
+                <div style="flex:1;background:#2f6ce0;color:#fff;border-radius:16px;padding:15px">
+                  <div style="font-size:26px;font-weight:800;letter-spacing:-.02em">{{ totalMedsOut }}</div>
+                  <div style="font-size:11.5px;opacity:.85;font-weight:600">Obat dikeluarkan</div>
+                </div>
+              </div>
+              <div style="font-size:14px;font-weight:700;margin:8px 2px 12px">Ringkasan per hari</div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ dailyRecap }}" as="d" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e7edf5;border-radius:14px;padding:13px 15px">
+                    <div style="flex:1"><div style="font-size:14px;font-weight:700">{{ d.label }}</div><div style="font-size:12px;color:#8a97a8">{{ d.patients }}</div></div>
+                    <div style="font-size:18px;font-weight:800;color:#2f6ce0">{{ d.count }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ rekapIsStok }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="font-size:13px;color:#8a97a8;margin-bottom:12px">{{ lowCount }} obat perlu segera dibeli &middot; urut dari terkecil</div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ lowStock }}" as="m" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e7edf5;border-radius:14px;padding:13px 15px">
+                    <div style="min-width:52px;height:52px;border-radius:12px;background:{{ m.tint }};display:flex;flex-direction:column;align-items:center;justify-content:center">
+                      <div style="font-size:20px;font-weight:800;color:{{ m.color }};line-height:1">{{ m.qty }}</div>
+                      <div style="font-size:10px;font-weight:600;color:{{ m.color }}">{{ m.unit }}</div>
+                    </div>
+                    <div style="flex:1"><div style="font-size:14.5px;font-weight:700">{{ m.name }}</div><div style="font-size:12px;color:#8a97a8">{{ m.cat }} &middot; {{ m.status }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- ================= BOTTOM TAB BAR ================= -->
+    <div style="position:absolute;left:0;right:0;bottom:0;height:66px;display:flex;background:#fff;border-top:1px solid #e7edf5;padding:8px 6px 6px;box-sizing:border-box">
+      <div onClick="{{ goBeranda }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ tabBeranda }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11 V20 H4 Z"/></svg><span style="font-size:10.5px;font-weight:700">Beranda</span></div>
+      <div onClick="{{ goKunjungan }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ tabKunjungan }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 9h6M9 13h6"/></svg><span style="font-size:10.5px;font-weight:700">Kunjungan</span></div>
+      <div onClick="{{ goStok }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ tabStok }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M4 7l3-3h10l3 3"/></svg><span style="font-size:10.5px;font-weight:700">Stok</span></div>
+      <div onClick="{{ goRekap }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ tabRekap }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span style="font-size:10.5px;font-weight:700">Rekap</span></div>
+    </div>
+
+    <!-- ================= MODAL: CATAT KUNJUNGAN ================= -->
+    <sc-if value="{{ showVisit }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:#f5f8fc;display:flex;flex-direction:column;z-index:20">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 16px 12px;background:#fff;border-bottom:1px solid #e7edf5">
+          <div onClick="{{ closeModal }}" style="width:36px;height:36px;border-radius:50%;background:#f0f4f9;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:#3b4a5e">&#8249;</div>
+          <div style="font-size:17px;font-weight:800">Catat Kunjungan</div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:18px">
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Nama pasien</label>
+          <input value="{{ dName }}" onInput="{{ setDName }}" placeholder="mis. Siti Aminah" style="width:100%;box-sizing:border-box;margin-top:7px;margin-bottom:16px;padding:14px;border:1px solid #dde4ee;border-radius:12px;font-size:15px;background:#fff"/>
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Umur</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:7px;margin-bottom:16px">
+            <input value="{{ dAge }}" onInput="{{ setDAge }}" inputmode="numeric" placeholder="0" style="width:90px;box-sizing:border-box;padding:14px;border:1px solid #dde4ee;border-radius:12px;font-size:15px;background:#fff"/>
+            <span style="font-size:14px;color:#8a97a8;font-weight:600">tahun</span>
+          </div>
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Gejala / keluhan <span style="color:#aab4c2;font-weight:600">&middot; opsional</span></label>
+          <textarea value="{{ dGejala }}" onInput="{{ setDGejala }}" placeholder="mis. Demam 2 hari, batuk, pilek" rows="3" style="width:100%;box-sizing:border-box;margin-top:7px;margin-bottom:16px;padding:14px;border:1px solid #dde4ee;border-radius:12px;font-size:15px;background:#fff;resize:none;line-height:1.4;color:#16202e"></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <label style="font-size:12.5px;font-weight:700;color:#6b7688">Obat yang diberikan</label>
+            <div onClick="{{ openPickVisit }}" style="font-size:12.5px;font-weight:700;color:#2f6ce0;cursor:pointer">+ Tambah obat</div>
+          </div>
+          <sc-if value="{{ hasDraftItems }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ draftItems }}" as="it" hint-placeholder-count="1">
+                <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e7edf5;border-radius:12px;padding:11px 12px">
+                  <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">{{ it.name }}</div><div style="font-size:11.5px;color:#8a97a8">{{ it.unit }}</div></div>
+                  <div style="display:flex;align-items:center;gap:0;border:1px solid #e2e7ef;border-radius:10px;overflow:hidden">
+                    <div onClick="{{ it.dec }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#3b4a5e;cursor:pointer;background:#f6f8fc">&minus;</div>
+                    <div style="width:34px;text-align:center;font-size:14px;font-weight:700">{{ it.qty }}</div>
+                    <div onClick="{{ it.inc }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#3b4a5e;cursor:pointer;background:#f6f8fc">+</div>
+                  </div>
+                  <div onClick="{{ it.remove }}" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:#c0c8d4;cursor:pointer;font-size:17px">&times;</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noDraftItems }}" hint-placeholder-val="{{ true }}">
+            <div style="border:1.5px dashed #d3dce8;border-radius:12px;padding:22px;text-align:center;color:#9aa7b8;font-size:13px">Belum ada obat. Ketuk &ldquo;Tambah obat&rdquo;.</div>
+          </sc-if>
+        </div>
+        <div style="padding:14px 16px;background:#fff;border-top:1px solid #e7edf5">
+          <div onClick="{{ saveVisit }}" style="background:{{ saveBg }};color:#fff;border-radius:14px;padding:15px;text-align:center;font-size:15px;font-weight:700;cursor:pointer">Simpan Kunjungan</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ================= MODAL: PICK / CARI OBAT ================= -->
+    <sc-if value="{{ showPick }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:#f5f8fc;display:flex;flex-direction:column;z-index:30">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 16px 12px;background:#fff;border-bottom:1px solid #e7edf5">
+          <div onClick="{{ backFromPick }}" style="width:36px;height:36px;border-radius:50%;background:#f0f4f9;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:#3b4a5e">&#8249;</div>
+          <div style="font-size:17px;font-weight:800">Cari Obat</div>
+        </div>
+        <div style="padding:14px 16px 10px;background:#fff">
+          <input value="{{ query }}" onInput="{{ setQuery }}" placeholder="Ketik nama obat…" style="width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid #dde4ee;border-radius:12px;font-size:15px;background:#f6f8fc"/>
+        </div>
+        <div style="flex:1;overflow:auto;padding:8px 16px 18px">
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <sc-for list="{{ results }}" as="r" hint-placeholder-count="6">
+              <div onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e7edf5;border-radius:12px;padding:12px 14px;cursor:pointer">
+                <div style="width:36px;height:36px;border-radius:10px;background:{{ r.tint }};color:{{ r.ink }};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800">{{ r.letter }}</div>
+                <div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:600">{{ r.name }}</div><div style="font-size:12px;color:#8a97a8">{{ r.sub }}</div></div>
+                <div style="font-size:20px;color:#2f6ce0;font-weight:600">+</div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ canCreate }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ createNewMed }}" style="display:flex;align-items:center;gap:12px;border:1.5px dashed #b9cdf0;border-radius:12px;padding:12px 14px;cursor:pointer;margin-top:4px">
+                <div style="width:36px;height:36px;border-radius:10px;background:#e7eefb;color:#2f6ce0;display:flex;align-items:center;justify-content:center;font-size:20px">+</div>
+                <div style="flex:1"><div style="font-size:14px;font-weight:700;color:#2f6ce0">Tambah &ldquo;{{ query }}&rdquo; sebagai obat baru</div><div style="font-size:12px;color:#8a97a8">Obat tablet</div></div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ================= MODAL: TAMBAH STOK ================= -->
+    <sc-if value="{{ showAddStock }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:rgba(16,22,30,.4);display:flex;flex-direction:column;justify-content:flex-end;z-index:40">
+        <div style="background:#fff;border-radius:22px 22px 0 0;padding:20px 18px 22px">
+          <div style="width:40px;height:4px;border-radius:2px;background:#dde4ee;margin:0 auto 16px"></div>
+          <div style="font-size:12px;font-weight:700;color:#8a97a8;text-transform:uppercase;letter-spacing:.08em">Tambah stok</div>
+          <div style="font-size:20px;font-weight:800;margin-top:3px;margin-bottom:2px">{{ stockName }}</div>
+          <div style="font-size:12.5px;color:#8a97a8;margin-bottom:18px">Stok sekarang: {{ stockCurrent }}</div>
+
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Satuan</label>
+          <div style="display:flex;gap:8px;margin-top:8px;margin-bottom:16px;flex-wrap:wrap">
+            <sc-for list="{{ unitOptions }}" as="u" hint-placeholder-count="3">
+              <div onClick="{{ u.select }}" style="padding:9px 14px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid {{ u.border }};background:{{ u.bg }};color:{{ u.fg }}">{{ u.label }}</div>
+            </sc-for>
+          </div>
+
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Jumlah</label>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:8px;margin-bottom:8px">
+            <div onClick="{{ decCount }}" style="width:46px;height:46px;border-radius:12px;background:#f0f4f9;display:flex;align-items:center;justify-content:center;font-size:24px;color:#3b4a5e;cursor:pointer">&minus;</div>
+            <input value="{{ stockCount }}" onInput="{{ setStockCount }}" inputmode="numeric" style="flex:1;text-align:center;padding:14px;border:1px solid #dde4ee;border-radius:12px;font-size:20px;font-weight:800;background:#f6f8fc"/>
+            <div onClick="{{ incCount }}" style="width:46px;height:46px;border-radius:12px;background:#f0f4f9;display:flex;align-items:center;justify-content:center;font-size:24px;color:#3b4a5e;cursor:pointer">+</div>
+          </div>
+          <div style="font-size:13px;color:#2f6ce0;font-weight:700;margin-bottom:20px">{{ stockPreview }}</div>
+
+          <div style="display:flex;gap:10px">
+            <div onClick="{{ closeAddStock }}" style="flex:1;text-align:center;padding:15px;border-radius:14px;background:#f0f4f9;color:#3b4a5e;font-size:15px;font-weight:700;cursor:pointer">Batal</div>
+            <div onClick="{{ confirmAddStock }}" style="flex:2;text-align:center;padding:15px;border-radius:14px;background:#2f6ce0;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Simpan Stok</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ================= MODAL: ATUR STATUS KELUAR ================= -->
+    <sc-if value="{{ showAway }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:rgba(16,22,30,.4);display:flex;flex-direction:column;justify-content:flex-end;z-index:40">
+        <div style="background:#fff;border-radius:22px 22px 0 0;padding:20px 18px 22px">
+          <div style="width:40px;height:4px;border-radius:2px;background:#dde4ee;margin:0 auto 16px"></div>
+          <div style="font-size:20px;font-weight:800;margin-bottom:3px">Atur status keluar</div>
+          <div style="font-size:12.5px;color:#8a97a8;margin-bottom:18px">Keterangan &amp; perkiraan ini tampil di halaman web pasien</div>
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Keterangan <span style="color:#aab4c2">&middot; opsional</span></label>
+          <input value="{{ awayNoteDraft }}" onInput="{{ setAwayNote }}" placeholder="mis. Antar pasien ke RS" style="width:100%;box-sizing:border-box;margin-top:7px;margin-bottom:16px;padding:14px;border:1px solid #dde4ee;border-radius:12px;font-size:15px;background:#f6f8fc"/>
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Perkiraan kembali</label>
+          <div style="display:flex;gap:8px;margin-top:8px;margin-bottom:20px;flex-wrap:wrap">
+            <sc-for list="{{ awayMinuteOptions }}" as="o" hint-placeholder-count="5">
+              <div onClick="{{ o.select }}" style="padding:9px 14px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div onClick="{{ closeAway }}" style="flex:1;text-align:center;padding:15px;border-radius:14px;background:#f0f4f9;color:#3b4a5e;font-size:15px;font-weight:700;cursor:pointer">Batal</div>
+            <div onClick="{{ confirmAway }}" style="flex:2;text-align:center;padding:15px;border-radius:14px;background:#16202e;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Set Keluar</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ================= MODAL: JADWAL / AGENDA ================= -->
+    <sc-if value="{{ showJadwal }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:#f5f8fc;display:flex;flex-direction:column;z-index:30">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 16px 12px;background:#fff;border-bottom:1px solid #e7edf5">
+          <div onClick="{{ closeModal }}" style="width:36px;height:36px;border-radius:50%;background:#f0f4f9;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:#3b4a5e">&#8249;</div>
+          <div style="flex:1;font-size:17px;font-weight:800">Jadwal &amp; Agenda</div>
+          <div onClick="{{ openEventNew }}" style="height:36px;padding:0 14px;border-radius:20px;background:#2f6ce0;color:#fff;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;cursor:pointer"><span style="font-size:18px;line-height:1">+</span> Tambah</div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:18px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ allEvents }}" as="e" hint-placeholder-count="3">
+              <div onClick="{{ e.edit }}" style="display:flex;align-items:center;gap:13px;background:#fff;border:1px solid #e7edf5;border-radius:14px;padding:14px 15px;cursor:pointer">
+                <div style="width:10px;height:10px;border-radius:50%;background:{{ e.dot }}"></div>
+                <div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:700">{{ e.title }}</div><div style="font-size:12.5px;color:#8a97a8">{{ e.when }}</div></div>
+                <span style="font-size:18px;color:#c0c8d4;line-height:1">&rsaquo;</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ================= MODAL: FORM AGENDA ================= -->
+    <sc-if value="{{ showEvent }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:#f5f8fc;display:flex;flex-direction:column;z-index:40">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 16px 12px;background:#fff;border-bottom:1px solid #e7edf5">
+          <div onClick="{{ backJadwal }}" style="width:36px;height:36px;border-radius:50%;background:#f0f4f9;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:#3b4a5e">&#8249;</div>
+          <div style="font-size:17px;font-weight:800">{{ evTitleLabel }}</div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:18px">
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Judul agenda</label>
+          <input value="{{ evTitle }}" onInput="{{ setEvTitle }}" placeholder="mis. Keluar kota / Posyandu" style="width:100%;box-sizing:border-box;margin-top:7px;margin-bottom:16px;padding:14px;border:1px solid #dde4ee;border-radius:12px;font-size:15px;background:#fff"/>
+          <div onClick="{{ toggleEvAllDay }}" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #dde4ee;border-radius:12px;padding:13px 14px;margin-bottom:16px;cursor:pointer">
+            <div style="font-size:14px;font-weight:600">Seharian / beberapa hari</div>
+            <sc-if value="{{ evAllDay }}" hint-placeholder-val="{{ false }}"><div style="width:46px;height:27px;border-radius:14px;background:#2f6ce0;position:relative;padding:3px;box-sizing:border-box"><div style="width:21px;height:21px;border-radius:50%;background:#fff;position:absolute;right:3px"></div></div></sc-if>
+            <sc-if value="{{ evNotAllDay }}" hint-placeholder-val="{{ true }}"><div style="width:46px;height:27px;border-radius:14px;background:#d6dbe4;position:relative;padding:3px;box-sizing:border-box"><div style="width:21px;height:21px;border-radius:50%;background:#fff;position:absolute;left:3px"></div></div></sc-if>
+          </div>
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Mulai</label>
+          <div style="display:flex;gap:8px;margin-top:7px;margin-bottom:16px">
+            <input type="date" value="{{ evStartDate }}" onInput="{{ setEvStartDate }}" style="flex:1;min-width:0;box-sizing:border-box;padding:13px;border:1px solid #dde4ee;border-radius:12px;font-size:14px;background:#fff;color:#16202e"/>
+            <sc-if value="{{ evNotAllDay }}" hint-placeholder-val="{{ true }}"><input type="time" value="{{ evStartTime }}" onInput="{{ setEvStartTime }}" style="width:112px;box-sizing:border-box;padding:13px;border:1px solid #dde4ee;border-radius:12px;font-size:14px;background:#fff;color:#16202e"/></sc-if>
+          </div>
+          <label style="font-size:12.5px;font-weight:700;color:#6b7688">Selesai</label>
+          <div style="display:flex;gap:8px;margin-top:7px;margin-bottom:16px">
+            <input type="date" value="{{ evEndDate }}" onInput="{{ setEvEndDate }}" style="flex:1;min-width:0;box-sizing:border-box;padding:13px;border:1px solid #dde4ee;border-radius:12px;font-size:14px;background:#fff;color:#16202e"/>
+            <sc-if value="{{ evNotAllDay }}" hint-placeholder-val="{{ true }}"><input type="time" value="{{ evEndTime }}" onInput="{{ setEvEndTime }}" style="width:112px;box-sizing:border-box;padding:13px;border:1px solid #dde4ee;border-radius:12px;font-size:14px;background:#fff;color:#16202e"/></sc-if>
+          </div>
+          <sc-if value="{{ evIsEdit }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ deleteEvent }}" style="text-align:center;padding:13px;border-radius:12px;background:#fbeceb;color:#c25146;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px">Hapus agenda</div>
+          </sc-if>
+        </div>
+        <div style="padding:14px 16px;background:#fff;border-top:1px solid #e7edf5">
+          <div onClick="{{ saveEvent }}" style="background:{{ evSaveBg }};color:#fff;border-radius:14px;padding:15px;text-align:center;font-size:15px;font-weight:700;cursor:pointer">Simpan Agenda</div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const CAT = {
+      Tablet: { base: 'butir', units: [ {label:'Box (100)', mult:100}, {label:'Strip (10)', mult:10}, {label:'Butir', mult:1} ], thr: 20 },
+      Sirup:  { base: 'botol', units: [ {label:'Botol', mult:1} ], thr: 5 },
+      Sachet: { base: 'sachet', units: [ {label:'Box (100)', mult:100}, {label:'Sachet', mult:1} ], thr: 20 },
+    };
+    this.CAT = CAT;
+    this.bc = ('BroadcastChannel' in window) ? new BroadcastChannel('klinik_bidan_pit') : null;
+    this.CATALOG = [
+      {name:'Paracetamol 500mg', cat:'Tablet'},
+      {name:'Paracetamol sirup', cat:'Sirup'},
+      {name:'Amoxicillin 500mg', cat:'Tablet'},
+      {name:'Amoxicillin sirup', cat:'Sirup'},
+      {name:'Ibuprofen 400mg', cat:'Tablet'},
+      {name:'Asam Mefenamat 500mg', cat:'Tablet'},
+      {name:'Cetirizine 10mg', cat:'Tablet'},
+      {name:'CTM 4mg', cat:'Tablet'},
+      {name:'Antasida', cat:'Tablet'},
+      {name:'Vitamin B Complex', cat:'Tablet'},
+      {name:'Vitamin C 500mg', cat:'Tablet'},
+      {name:'Domperidone 10mg', cat:'Tablet'},
+      {name:'Dexamethasone 0.5mg', cat:'Tablet'},
+      {name:'Oralit', cat:'Sachet'},
+    ];
+    const now = Date.now(), DAY = 86400000;
+    const sot = new Date(); sot.setHours(0,0,0,0);
+    const at = (base,h,m)=>{ const d=new Date(base); d.setHours(h,m,0,0); return d.getTime(); };
+    const seed = {
+      bidanHadir: true,
+      screen: 'beranda',
+      awayNote: '', awayUntil: null,
+      events: [
+        {id:'e1', title:'Posyandu Desa Sukamaju', allDay:false, startTs: at(sot,13,0), endTs: at(sot,15,0)},
+        {id:'e2', title:'Keluar kota \u2014 acara keluarga', allDay:true, startTs: sot.getTime()+DAY, endTs: sot.getTime()+3*DAY},
+      ],
+      medicines: [
+        {id:'m1', name:'Paracetamol sirup', cat:'Sirup', qty:2},
+        {id:'m2', name:'Amoxicillin 500mg', cat:'Tablet', qty:6},
+        {id:'m3', name:'Vitamin B Complex', cat:'Tablet', qty:14},
+        {id:'m4', name:'Paracetamol 500mg', cat:'Tablet', qty:240},
+        {id:'m5', name:'Ibuprofen 400mg', cat:'Tablet', qty:85},
+        {id:'m6', name:'Cetirizine 10mg', cat:'Tablet', qty:40},
+        {id:'m7', name:'Amoxicillin sirup', cat:'Sirup', qty:9},
+        {id:'m8', name:'Antasida', cat:'Tablet', qty:120},
+        {id:'m9', name:'Oralit', cat:'Sachet', qty:60},
+      ],
+      visits: [
+        {id:'v1', name:'Siti Aminah', age:27, ts: now - 2*3600000, gejala:'Demam 2 hari, batuk kering', items:[{name:'Paracetamol sirup', qty:1, unit:'botol'}]},
+        {id:'v2', name:'Budi Santoso', age:45, ts: now - 5*3600000, gejala:'Nyeri lambung, mual', items:[{name:'Amoxicillin 500mg', qty:10, unit:'butir'},{name:'Vitamin B Complex', qty:10, unit:'butir'}]},
+        {id:'v3', name:'Rina Wati', age:5, ts: now - DAY - 3600000, gejala:'Panas tinggi, rewel', items:[{name:'Paracetamol 500mg', qty:10, unit:'butir'}]},
+        {id:'v4', name:'Joko Priyono', age:60, ts: now - 2*DAY, gejala:'', items:[{name:'Antasida', qty:20, unit:'butir'},{name:'Vitamin C 500mg', qty:10, unit:'butir'}]},
+      ],
+    };
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('klinik_bidan_pit_v2')); } catch(e) {}
+    const d = saved || seed;
+    this.state = {
+      bidanHadir: d.bidanHadir,
+      awayNote: d.awayNote || '',
+      awayUntil: d.awayUntil || null,
+      events: d.events || seed.events,
+      screen: 'beranda',
+      medicines: d.medicines,
+      visits: d.visits,
+      rekapTab: 'kunjungan',
+      modal: null,            // 'visit'|'pick'|'addstock'|'away'|'jadwal'|'event'
+      pickContext: 'visit',
+      query: '',
+      draft: { name:'', age:'', gejala:'', items:[] },
+      awayDraft: { note:'', minutes:null },
+      eventDraft: null,
+      stockTarget: null,
+      stockUnitIdx: 0,
+      stockCount: '1',
+    };
+  }
+
+  persist(next) {
+    const s = { ...this.state, ...next };
+    try { localStorage.setItem('klinik_bidan_pit_v2', JSON.stringify({
+      bidanHadir: s.bidanHadir, awayNote: s.awayNote, awayUntil: s.awayUntil,
+      events: s.events, medicines: s.medicines, visits: s.visits,
+    })); } catch(e) {}
+  }
+  save(next) { this.persist(next); this.setState(next); }
+
+  componentDidMount() { this.syncStatus(); }
+  // Simulasi "API": siarkan status + agenda ke halaman web pasien (localStorage + BroadcastChannel, satu origin)
+  statusPayload(extra) {
+    const s = { ...this.state, ...(extra || {}) };
+    return {
+      hadir: !!s.bidanHadir, awayNote: s.awayNote || '', awayUntil: s.awayUntil || null,
+      ts: Date.now(), clinic: 'Klinik Bidan Pit',
+      events: (s.events || []).map(e => ({ id:e.id, title:e.title, allDay:!!e.allDay, startTs:e.startTs, endTs:e.endTs })),
+    };
+  }
+  syncStatus(extra) {
+    const p = this.statusPayload(extra);
+    try { localStorage.setItem('klinik_bidan_status', JSON.stringify(p)); } catch(e) {}
+    if (this.bc) { try { this.bc.postMessage(p); } catch(e) {} }
+  }
+  saveSync(next) { this.persist(next); this.syncStatus(next); this.setState(next); }
+
+  hhmm(ts){ const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+'.'+String(d.getMinutes()).padStart(2,'0'); }
+  shortDate(ts){ const d=new Date(ts); const bl=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; const hr=['Min','Sen','Sel','Rab','Kam','Jum','Sab']; return hr[d.getDay()]+', '+d.getDate()+' '+bl[d.getMonth()]; }
+  eventWhen(e){
+    const s=new Date(e.startTs), en=new Date(e.endTs);
+    const sameDay = s.toDateString()===en.toDateString();
+    if(e.allDay){
+      if(sameDay) return this.shortDate(e.startTs)+' \u00b7 seharian';
+      const days=Math.round((new Date(e.endTs).setHours(0,0,0,0)-new Date(e.startTs).setHours(0,0,0,0))/86400000)+1;
+      return this.shortDate(e.startTs)+' \u2013 '+this.shortDate(e.endTs)+' \u00b7 '+days+' hari';
+    }
+    if(sameDay) return this.shortDate(e.startTs)+' \u00b7 '+this.hhmm(e.startTs)+'\u2013'+this.hhmm(e.endTs);
+    return this.shortDate(e.startTs)+' '+this.hhmm(e.startTs)+' \u2013 '+this.shortDate(e.endTs)+' '+this.hhmm(e.endTs);
+  }
+  untilLabel(ts){
+    const diff=ts-Date.now();
+    if(diff<=0) return 'sudah lewat perkiraan';
+    const m=Math.round(diff/60000);
+    if(m<60) return '\u00b1 '+m+' menit lagi';
+    const h=Math.floor(m/60), mm=m%60;
+    return '\u00b1 '+h+' jam'+(mm?' '+mm+' mnt':'')+' lagi';
+  }
+  openEventForm(ev){
+    const pad=n=>String(n).padStart(2,'0');
+    const toDate=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+    const toTime=ts=>{const d=new Date(ts);return pad(d.getHours())+':'+pad(d.getMinutes());};
+    let draft;
+    if(ev){ draft={id:ev.id, title:ev.title, allDay:!!ev.allDay, startDate:toDate(ev.startTs), startTime:toTime(ev.startTs), endDate:toDate(ev.endTs), endTime:toTime(ev.endTs)}; }
+    else { const d=new Date(); draft={id:null, title:'', allDay:false, startDate:toDate(d.getTime()), startTime:pad(d.getHours())+':00', endDate:toDate(d.getTime()), endTime:pad(Math.min(23,d.getHours()+1))+':00'}; }
+    this.setState({ modal:'event', eventDraft:draft });
+  }
+  saveEvent(){
+    const S=this.state, e=S.eventDraft;
+    if(!e || !e.title.trim() || !e.startDate) return;
+    const mk=(date,time)=>new Date(date+'T'+time).getTime();
+    let startTs=mk(e.startDate, e.allDay?'00:00':(e.startTime||'00:00'));
+    let endTs=mk(e.endDate||e.startDate, e.allDay?'23:59':(e.endTime||'23:59'));
+    if(endTs<startTs) endTs=startTs;
+    let events=[...S.events];
+    if(e.id){ const i=events.findIndex(x=>x.id===e.id); if(i>=0) events[i]={id:e.id, title:e.title.trim(), allDay:e.allDay, startTs, endTs}; }
+    else events.push({id:'e'+Date.now(), title:e.title.trim(), allDay:e.allDay, startTs, endTs});
+    this.saveSync({ events, modal:'jadwal', eventDraft:null });
+  }
+  deleteEvent(){
+    const S=this.state, e=S.eventDraft;
+    if(!e||!e.id) return;
+    this.saveSync({ events:S.events.filter(x=>x.id!==e.id), modal:'jadwal', eventDraft:null });
+  }
+
+  thr(cat) { return (this.CAT[cat] || this.CAT.Tablet).thr; }
+  baseUnit(cat) { return (this.CAT[cat] || this.CAT.Tablet).base; }
+
+  fmtDate(ts) {
+    const d = new Date(ts), now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const yest = new Date(now.getTime() - 86400000).toDateString() === d.toDateString();
+    const hh = String(d.getHours()).padStart(2,'0') + '.' + String(d.getMinutes()).padStart(2,'0');
+    if (sameDay) return 'Hari ini ' + hh;
+    if (yest) return 'Kemarin ' + hh;
+    const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    return d.getDate() + ' ' + bulan[d.getMonth()];
+  }
+  dayKey(ts){ return new Date(ts).toDateString(); }
+  dayLabel(ts){
+    const d=new Date(ts), now=new Date();
+    if(d.toDateString()===now.toDateString()) return 'Hari ini';
+    if(new Date(now.getTime()-86400000).toDateString()===d.toDateString()) return 'Kemarin';
+    const bulan=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    return d.getDate()+' '+bulan[d.getMonth()];
+  }
+
+  renderVals() {
+    const S = this.state;
+    const setScreen = (screen) => this.setState({ screen, modal: null });
+
+    // low stock (sorted asc)
+    const low = S.medicines
+      .filter(m => m.qty <= this.thr(m.cat))
+      .sort((a,b) => a.qty - b.qty);
+    const lowStock = low.map(m => {
+      const danger = m.qty <= this.thr(m.cat) * 0.5;
+      const color = danger ? '#d64545' : '#e0a52a';
+      const tint = danger ? '#fdeaea' : '#fdf3df';
+      return { name:m.name, cat:m.cat, qty:m.qty, unit:this.baseUnit(m.cat), color, tint,
+               status: danger ? 'segera dibeli' : 'perlu diperhatikan' };
+    });
+
+    // all meds
+    const meds = [...S.medicines].sort((a,b)=>a.name.localeCompare(b.name)).map(m => {
+      const lowf = m.qty <= this.thr(m.cat);
+      return { name:m.name, cat:m.cat, qty:m.qty, unit:this.baseUnit(m.cat),
+               dot: lowf ? '#d64545' : '#3fbf8f', qtyColor: lowf ? '#d64545' : '#16202e' };
+    });
+
+    // visits (newest first)
+    const visits = [...S.visits].sort((a,b)=>b.ts-a.ts).map(v => ({
+      name:v.name,
+      initial:(v.name||'?').trim().charAt(0).toUpperCase(),
+      meta: v.age + ' tahun',
+      dateLabel: this.fmtDate(v.ts),
+      gejala: v.gejala || '',
+      chips: v.items.map(it => it.name + ' · ' + it.qty + ' ' + it.unit),
+    }));
+    const todayKey = new Date().toDateString();
+    const todayCount = S.visits.filter(v => this.dayKey(v.ts)===todayKey).length;
+
+    // daily recap
+    const byDay = {};
+    S.visits.forEach(v => {
+      const k = this.dayKey(v.ts);
+      if(!byDay[k]) byDay[k] = { ts:v.ts, count:0, names:[] };
+      byDay[k].count++; byDay[k].names.push((v.name||'').split(' ')[0]);
+      if(v.ts>byDay[k].ts) byDay[k].ts=v.ts;
+    });
+    const dailyRecap = Object.values(byDay).sort((a,b)=>b.ts-a.ts).map(d => ({
+      label: this.dayLabel(d.ts), count: d.count, patients: d.names.slice(0,3).join(', ') + (d.names.length>3?' +'+(d.names.length-3):''),
+    }));
+    const totalMedsOut = S.visits.reduce((s,v)=>s+v.items.reduce((a,i)=>a+i.qty,0),0);
+
+    // ---- draft (visit) items ----
+    const draftItems = S.draft.items.map((it, i) => ({
+      name: it.name, unit: it.unit, qty: it.qty,
+      inc: () => { const items=[...S.draft.items]; items[i]={...items[i], qty:items[i].qty+1}; this.setState({draft:{...S.draft, items}}); },
+      dec: () => { const items=[...S.draft.items]; items[i]={...items[i], qty:Math.max(1,items[i].qty-1)}; this.setState({draft:{...S.draft, items}}); },
+      remove: () => { const items=S.draft.items.filter((_,j)=>j!==i); this.setState({draft:{...S.draft, items}}); },
+    }));
+    const canSaveVisit = S.draft.name.trim() && S.draft.items.length>0;
+
+    // ---- pick / search results ----
+    const q = S.query.trim().toLowerCase();
+    const results = this.CATALOG
+      .filter(c => c.name.toLowerCase().includes(q))
+      .map(c => {
+        const existing = S.medicines.find(m => m.name.toLowerCase()===c.name.toLowerCase());
+        const inStock = !!existing;
+        return {
+          name: c.name,
+          sub: c.cat + (inStock ? ' · stok ' + existing.qty + ' ' + this.baseUnit(c.cat) : ' · belum ada stok'),
+          letter: c.name.charAt(0).toUpperCase(),
+          tint: c.cat==='Sirup' ? '#e6f3ee' : (c.cat==='Sachet' ? '#f3edfb' : '#e7eefb'),
+          ink:  c.cat==='Sirup' ? '#2f8a63' : (c.cat==='Sachet' ? '#7a54c0' : '#2f6ce0'),
+          pick: () => this.pick(c),
+        };
+      });
+    const exactMatch = this.CATALOG.some(c => c.name.toLowerCase()===q) ||
+                       S.medicines.some(m => m.name.toLowerCase()===q);
+    const canCreate = S.pickContext==='stock' && q.length>=3 && !exactMatch;
+
+    // ---- add stock ----
+    const st = S.stockTarget;
+    let unitOptions = [], stockPreview = '', stockName='', stockCurrent='';
+    if (st) {
+      const cfg = this.CAT[st.cat] || this.CAT.Tablet;
+      stockName = st.name;
+      stockCurrent = (st.qty||0) + ' ' + cfg.base;
+      unitOptions = cfg.units.map((u,i) => ({
+        label: u.label,
+        select: () => this.setState({ stockUnitIdx:i }),
+        border: i===S.stockUnitIdx ? '#2f6ce0' : '#e2e7ef',
+        bg: i===S.stockUnitIdx ? '#e7eefb' : '#fff',
+        fg: i===S.stockUnitIdx ? '#2f6ce0' : '#6b7688',
+      }));
+      const mult = (cfg.units[S.stockUnitIdx]||cfg.units[0]).mult;
+      const n = parseInt(S.stockCount,10) || 0;
+      stockPreview = '= +' + (n*mult) + ' ' + cfg.base + ' (total jadi ' + ((st.qty||0)+n*mult) + ')';
+    }
+
+    // events
+    const nowTs = Date.now();
+    const allEv = [...S.events].sort((a,b)=>a.startTs-b.startTs).map(e => ({
+      id:e.id, title:e.title, when:this.eventWhen(e), allDay:e.allDay,
+      past: e.endTs < nowTs,
+      dot: e.endTs < nowTs ? '#c0c8d4' : (e.allDay ? '#e0a52a' : '#2f6ce0'),
+      edit: () => this.openEventForm(e),
+    }));
+    const upcoming = allEv.filter(e=>!e.past);
+
+    const tc = (name) => S.screen===name ? '#2f6ce0' : '#9aa7b8';
+
+    return {
+      // screen flags
+      isBeranda: S.screen==='beranda', isKunjungan: S.screen==='kunjungan',
+      isStok: S.screen==='stok', isRekap: S.screen==='rekap',
+      goBeranda: ()=>setScreen('beranda'), goKunjungan: ()=>setScreen('kunjungan'),
+      goStok: ()=>setScreen('stok'), goRekap: ()=>setScreen('rekap'),
+      tabBeranda: tc('beranda'), tabKunjungan: tc('kunjungan'), tabStok: tc('stok'), tabRekap: tc('rekap'),
+
+      // status
+      bidanHadir: S.bidanHadir, bidanTidak: !S.bidanHadir,
+      awayNote: S.awayNote, hasAwayUntil: !!S.awayUntil, noAwayUntil: !S.awayUntil,
+      awayUntilLabel: S.awayUntil ? this.hhmm(S.awayUntil) : '',
+      awayCountdown: S.awayUntil ? this.untilLabel(S.awayUntil) : '',
+      openAway: () => this.setState({ modal:'away', awayDraft:{ note:S.awayNote||'', minutes:null } }),
+      setHadir: () => this.saveSync({ bidanHadir:true, awayNote:'', awayUntil:null, modal:null }),
+      extend15: () => this.saveSync({ awayUntil:(S.awayUntil||Date.now())+15*60000 }),
+      extend30: () => this.saveSync({ awayUntil:(S.awayUntil||Date.now())+30*60000 }),
+      // away sheet
+      showAway: S.modal==='away',
+      awayNoteDraft: S.awayDraft.note,
+      setAwayNote: (e)=>this.setState({awayDraft:{...S.awayDraft, note:e.target.value}}),
+      awayMinuteOptions: [
+        {label:'Tidak tahu', val:null}, {label:'30 mnt', val:30},
+        {label:'1 jam', val:60}, {label:'2 jam', val:120}, {label:'3 jam', val:180},
+      ].map(o => ({ label:o.label,
+        select: () => this.setState({awayDraft:{...S.awayDraft, minutes:o.val}}),
+        bg: S.awayDraft.minutes===o.val ? '#16202e' : '#f0f4f9',
+        fg: S.awayDraft.minutes===o.val ? '#fff' : '#3b4a5e' })),
+      confirmAway: () => this.saveSync({
+        bidanHadir:false, awayNote:(S.awayDraft.note||'').trim(),
+        awayUntil: S.awayDraft.minutes ? Date.now()+S.awayDraft.minutes*60000 : null, modal:null }),
+      closeAway: () => this.setState({modal:null}),
+      // events / jadwal
+      hasEvents: upcoming.length>0, noEvents: upcoming.length===0,
+      upcomingEvents: upcoming.slice(0,3), allEvents: allEv,
+      openJadwal: () => this.setState({ modal:'jadwal' }),
+      showJadwal: S.modal==='jadwal',
+      openEventNew: () => this.openEventForm(null),
+      showEvent: S.modal==='event',
+      evTitle: S.eventDraft ? S.eventDraft.title : '',
+      evAllDay: !!(S.eventDraft && S.eventDraft.allDay),
+      evNotAllDay: !(S.eventDraft && S.eventDraft.allDay),
+      evStartDate: S.eventDraft ? S.eventDraft.startDate : '',
+      evStartTime: S.eventDraft ? S.eventDraft.startTime : '',
+      evEndDate: S.eventDraft ? S.eventDraft.endDate : '',
+      evEndTime: S.eventDraft ? S.eventDraft.endTime : '',
+      evIsEdit: !!(S.eventDraft && S.eventDraft.id),
+      evTitleLabel: (S.eventDraft && S.eventDraft.id) ? 'Ubah Agenda' : 'Agenda Baru',
+      setEvTitle: (e)=>this.setState({eventDraft:{...S.eventDraft, title:e.target.value}}),
+      toggleEvAllDay: ()=>this.setState({eventDraft:{...S.eventDraft, allDay:!S.eventDraft.allDay}}),
+      setEvStartDate: (e)=>this.setState({eventDraft:{...S.eventDraft, startDate:e.target.value}}),
+      setEvStartTime: (e)=>this.setState({eventDraft:{...S.eventDraft, startTime:e.target.value}}),
+      setEvEndDate: (e)=>this.setState({eventDraft:{...S.eventDraft, endDate:e.target.value}}),
+      setEvEndTime: (e)=>this.setState({eventDraft:{...S.eventDraft, endTime:e.target.value}}),
+      evSaveBg: (S.eventDraft && S.eventDraft.title.trim() && S.eventDraft.startDate) ? '#2f6ce0' : '#b9c6d8',
+      saveEvent: ()=>this.saveEvent(),
+      deleteEvent: ()=>this.deleteEvent(),
+      backJadwal: ()=>this.setState({modal:'jadwal', eventDraft:null}),
+
+      // data
+      lowStock, lowCount: low.length, meds, medCount: S.medicines.length,
+      visits, totalVisits: S.visits.length, todayCount,
+      dailyRecap, totalMedsOut,
+
+      // rekap tabs
+      rekapIsKunjungan: S.rekapTab==='kunjungan', rekapIsStok: S.rekapTab==='stok',
+      setRekapKunjungan: ()=>this.setState({rekapTab:'kunjungan'}),
+      setRekapStok: ()=>this.setState({rekapTab:'stok'}),
+      rk_bgK: S.rekapTab==='kunjungan'?'#fff':'transparent', rk_fgK: S.rekapTab==='kunjungan'?'#16202e':'#8a97a8',
+      rk_bgS: S.rekapTab==='stok'?'#fff':'transparent', rk_fgS: S.rekapTab==='stok'?'#16202e':'#8a97a8',
+
+      // visit modal
+      showVisit: S.modal==='visit',
+      openVisit: () => this.setState({ modal:'visit', draft:{name:'',age:'',gejala:'',items:[]} }),
+      closeModal: () => this.setState({ modal:null }),
+      dName: S.draft.name, dAge: S.draft.age, dGejala: S.draft.gejala,
+      setDName: (e)=>this.setState({draft:{...S.draft, name:e.target.value}}),
+      setDAge: (e)=>this.setState({draft:{...S.draft, age:e.target.value.replace(/[^0-9]/g,'')}}),
+      setDGejala: (e)=>this.setState({draft:{...S.draft, gejala:e.target.value}}),
+      draftItems, hasDraftItems: S.draft.items.length>0, noDraftItems: S.draft.items.length===0,
+      saveBg: canSaveVisit ? '#2f6ce0' : '#b9c6d8',
+      saveVisit: () => this.saveVisit(),
+
+      // pick modal
+      showPick: S.modal==='pick',
+      openPickVisit: () => this.setState({ modal:'pick', pickContext:'visit', query:'' }),
+      openPickStock: () => this.setState({ modal:'pick', pickContext:'stock', query:'' }),
+      backFromPick: () => this.setState({ modal: S.pickContext==='visit' ? 'visit' : null }),
+      query: S.query, setQuery: (e)=>this.setState({query:e.target.value}),
+      results, canCreate, createNewMed: () => this.pick({ name: S.query.trim(), cat:'Tablet' }),
+
+      // add stock modal
+      showAddStock: S.modal==='addstock',
+      stockName, stockCurrent, unitOptions, stockPreview,
+      stockCount: S.stockCount,
+      setStockCount: (e)=>this.setState({stockCount:e.target.value.replace(/[^0-9]/g,'')}),
+      incCount: ()=>this.setState({stockCount:String((parseInt(S.stockCount,10)||0)+1)}),
+      decCount: ()=>this.setState({stockCount:String(Math.max(1,(parseInt(S.stockCount,10)||0)-1))}),
+      closeAddStock: ()=>this.setState({modal:null, stockTarget:null}),
+      confirmAddStock: ()=>this.confirmAddStock(),
+    };
+  }
+
+  pick(c) {
+    const S = this.state;
+    if (S.pickContext === 'visit') {
+      const items = [...S.draft.items];
+      const idx = items.findIndex(i => i.name.toLowerCase()===c.name.toLowerCase());
+      if (idx>=0) items[idx] = {...items[idx], qty: items[idx].qty + 1};
+      else items.push({ name:c.name, cat:c.cat, qty:1, unit:this.baseUnit(c.cat) });
+      this.setState({ draft:{...S.draft, items}, modal:'visit' });
+    } else {
+      let target = S.medicines.find(m => m.name.toLowerCase()===c.name.toLowerCase());
+      if (!target) target = { id:'m'+Date.now(), name:c.name, cat:c.cat, qty:0, _new:true };
+      this.setState({ modal:'addstock', stockTarget: target, stockUnitIdx:0, stockCount:'1' });
+    }
+  }
+
+  confirmAddStock() {
+    const S = this.state, st = S.stockTarget;
+    if (!st) return;
+    const cfg = this.CAT[st.cat] || this.CAT.Tablet;
+    const mult = (cfg.units[S.stockUnitIdx]||cfg.units[0]).mult;
+    const add = (parseInt(S.stockCount,10)||0) * mult;
+    let meds = [...S.medicines];
+    const idx = meds.findIndex(m => m.id===st.id || m.name.toLowerCase()===st.name.toLowerCase());
+    if (idx>=0) meds[idx] = {...meds[idx], qty: meds[idx].qty + add};
+    else meds.push({ id:st.id, name:st.name, cat:st.cat, qty:add });
+    this.save({ medicines: meds, modal:null, stockTarget:null, screen:'stok' });
+  }
+
+  saveVisit() {
+    const S = this.state;
+    if (!S.draft.name.trim() || S.draft.items.length===0) return;
+    // reduce stock
+    let meds = [...S.medicines];
+    S.draft.items.forEach(it => {
+      const idx = meds.findIndex(m => m.name.toLowerCase()===it.name.toLowerCase());
+      if (idx>=0) meds[idx] = {...meds[idx], qty: Math.max(0, meds[idx].qty - it.qty)};
+    });
+    const visit = {
+      id:'v'+Date.now(), name:S.draft.name.trim(),
+      age: parseInt(S.draft.age,10)||0, ts: Date.now(),
+      gejala: (S.draft.gejala||'').trim(),
+      items: S.draft.items.map(i=>({name:i.name, qty:i.qty, unit:i.unit})),
+    };
+    this.save({ medicines: meds, visits:[...S.visits, visit], modal:null,
+                draft:{name:'',age:'',gejala:'',items:[]}, screen:'kunjungan' });
+  }
+}
+</script>
+</body>
+</html>
