@@ -6,6 +6,39 @@ CREATE DATABASE IF NOT EXISTS app_klinik
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE app_klinik;
 
+-- Akun untuk masuk ke Bidan App. Praktiknya hanya satu (bidan), tapi tabel
+-- tetap dipakai supaya menambah akun kedua tidak perlu mengubah skema.
+-- Kata sandi disimpan sebagai hash bcrypt — tidak pernah dalam bentuk asli.
+CREATE TABLE IF NOT EXISTS users (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  username      VARCHAR(100) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at    BIGINT       NOT NULL,                   -- epoch ms
+  updated_at    BIGINT       NOT NULL
+) ENGINE=InnoDB;
+
+-- Satu baris = satu sesi login di satu perangkat.
+--
+-- Keberadaan tabel inilah yang membuat sesi bisa DICABUT. Dengan token yang
+-- berdiri sendiri (mis. JWT tanpa catatan di server), token yang bocor tetap
+-- sah sampai kedaluwarsa dan tidak ada cara menghentikannya.
+--
+-- Yang disimpan hanya SHA-256 dari tokennya, bukan tokennya. Kalau isi
+-- database bocor, isinya tidak bisa dipakai untuk masuk.
+CREATE TABLE IF NOT EXISTS sessions (
+  id           INT AUTO_INCREMENT PRIMARY KEY,
+  user_id      INT          NOT NULL,
+  token_hash   CHAR(64)     NOT NULL UNIQUE,             -- hex SHA-256
+  user_agent   VARCHAR(255) NOT NULL DEFAULT '',
+  ip           VARCHAR(64)  NOT NULL DEFAULT '',
+  created_at   BIGINT       NOT NULL,                    -- epoch ms
+  last_seen_at BIGINT       NOT NULL,
+  expires_at   BIGINT       NOT NULL,
+  revoked_at   BIGINT       NULL,
+  CONSTRAINT fk_sessions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_sessions_expires (expires_at)
+) ENGINE=InnoDB;
+
 -- Status bidan (baris tunggal, id selalu = 1)
 CREATE TABLE IF NOT EXISTS clinic_status (
   id          TINYINT      NOT NULL PRIMARY KEY DEFAULT 1,

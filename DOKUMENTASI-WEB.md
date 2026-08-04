@@ -63,30 +63,90 @@ web/                         # Frontend Vue 3
         └── TabBar.vue
 ```
 
-## API (base `http://<host>:4000`) — identik dengan versi Node
+## API (base `http://<host>:4000`)
 
-| Method | Endpoint | Fungsi |
+Kolom **Sesi** menandai endpoint yang menuntut cookie sesi sah. Yang terbuka
+hanya tiga: health, halaman pasien, dan pintu masuknya sendiri.
+
+| Method | Endpoint | Sesi | Fungsi |
+|---|---|:--:|---|
+| GET | `/api/health` | — | Cek server hidup |
+| GET | `/api/public/status` | — | Payload halaman pasien (status bidan + agenda; **tanpa data pasien**) |
+| POST | `/api/auth/login` | — | Masuk `{username, password}` → memasang cookie `klinik_sesi` |
+| POST | `/api/auth/logout` | — | Cabut sesi & hapus cookie |
+| GET | `/api/auth/me` | ✓ | Siapa yang sedang masuk |
+| GET | `/api/state` | ✓ | Snapshot penuh (status, events, medicines, **visits**) |
+| GET | `/api/catalog` | ✓ | Katalog obat + aturan satuan |
+| PUT | `/api/status` | ✓ | Ubah status `{bidanHadir, awayNote, awayUntil}` |
+| POST/PUT/DELETE | `/api/events[/:id]` | ✓ | CRUD agenda |
+| POST | `/api/medicines/stock` | ✓ | Tambah stok / buat obat baru `{id?, name, cat, amount}` |
+| POST | `/api/visits` | ✓ | Catat kunjungan + kurangi stok (transaksi) |
+| GET | `/` , `/masuk`, `/app`, `/assets/*` | — | Halaman web (SPA) |
+
+Halaman SPA-nya sendiri memang tersaji tanpa sesi — yang dijaga adalah
+**datanya**. Membuka `/app` tanpa masuk hanya menghasilkan 401 dari API, lalu
+penjaga rute mengantar ke `/masuk`.
+
+## Autentikasi
+
+Satu akun bidan. Sesi memakai **token acak 256-bit** (bukan JWT) di cookie
+`klinik_sesi`: `HttpOnly`, `SameSite=Lax`, dan `Secure` otomatis saat
+`APP_ENV=production`.
+
+- Database hanya menyimpan **SHA-256 dari token**, bukan tokennya — isi database
+  yang bocor tidak bisa dipakai untuk masuk.
+- Tabel `sessions` membuat sesi **bisa dicabut**; itu yang tidak bisa dilakukan
+  token yang berdiri sendiri seperti JWT polos.
+- Umur sesi 14 hari, diperpanjang selama dipakai (paling sering sekali per jam);
+  sesi mati disapu berkala.
+- Kata sandi disimpan sebagai hash **bcrypt**.
+- Login dibatasi **per nama pengguna** (5 gagal beruntun, lalu 1 percobaan tiap
+  20 detik). Pembatas per IP saja tidak cukup: serangan dari banyak IP tetap
+  lolos selama tiap IP pelan. Hanya kegagalan yang memotong jatah, jadi bidan
+  yang mengetik benar tidak pernah terkena.
+- Nama pengguna salah dan sandi salah memberi pesan **yang sama** dan memakan
+  waktu yang sama — membedakannya akan memberitahu penebak bahwa separuh
+  tebakannya sudah benar.
+
+**Akun pertama** dibuat dari `ADMIN_USERNAME` + `ADMIN_PASSWORD` saat tabel
+`users` masih kosong. Setelah akun ada, nilai itu **diabaikan sepenuhnya** —
+sandi yang diganti lewat aplikasi tidak akan tertimpa isi `.env`. Bila belum ada
+akun dan `ADMIN_PASSWORD` kosong (atau kurang dari 10 karakter), server
+**menolak jalan**: lebih baik mati daripada hidup tanpa penjaga.
+
+## Pengaturan lingkungan (`server/.env`)
+
+Contoh lengkap ada di `server/.env.example`. Yang berpengaruh pada keamanan:
+
+| Variabel | Bawaan | Catatan |
 |---|---|---|
-| GET | `/api/health` | Cek server hidup |
-| GET | `/api/state` | Snapshot penuh (status, events, medicines, visits) |
-| GET | `/api/catalog` | Katalog obat + aturan satuan |
-| PUT | `/api/status` | Ubah status `{bidanHadir, awayNote, awayUntil}` |
-| POST/PUT/DELETE | `/api/events[/:id]` | CRUD agenda |
-| POST | `/api/medicines/stock` | Tambah stok / buat obat baru `{id?, name, cat, amount}` |
-| POST | `/api/visits` | Catat kunjungan + kurangi stok (transaksi) |
-| GET | `/api/public/status` | Payload halaman pasien |
-| GET | `/` , `/app`, `/assets/*` | Halaman web (SPA) |
+| `APP_ENV` | `development` | `production` menyalakan cookie `Secure` + HSTS. **Hanya** bila situs sudah lewat https — di http, peramban menolak cookie `Secure` dan login gagal diam-diam |
+| `BIND_ADDR` | `127.0.0.1` | Di produksi biarkan loopback; hanya reverse proxy yang menghadap internet |
+| `CORS_ORIGINS` | kosong | Daftar tertutup dipisah koma. Di produksi kosong (satu origin). Saat dev dengan Vite: `http://localhost:5173` |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | `bidan` / — | Hanya untuk akun pertama; sebaiknya dikosongkan setelah terbentuk |
+
+Pengerasan lain yang sudah terpasang: header keamanan, batas laju per IP, batas
+badan request 1 MB, timeout baca/tulis/idle, shutdown yang rapi, pesan galat
+yang tidak lagi membocorkan isi database, dan `multiStatements` yang **mati** di
+koneksi aplikasi (hanya perkakas schema/seed yang memakainya).
+
+`cmd/seed` **menolak jalan saat `APP_ENV=production`** — ia meng-`TRUNCATE`
+tabel kunjungan, obat, dan agenda.
 
 ## Cara menjalankan
 
 Prasyarat: **Go** (`go version`; jika "not recognized", tambahkan `C:\Program Files\Go\bin` ke PATH), **Node**, **MySQL** hidup.
 
-**Sekali saja — siapkan DB:**
+**Sekali saja — siapkan DB & akun:**
 ```powershell
 cd server
 Get-Content migrations/schema.sql | & "C:\mysql\bin\mysql.exe" -u root -p<PASSWORD_ANDA>
-go run ./cmd/seed        # isi data contoh (idempotent)
+go run ./cmd/seed        # isi data contoh (idempotent; TIDAK menyentuh users/sessions)
 ```
+
+Lalu salin `.env.example` ke `.env` dan isi minimal `DB_*`, `ADMIN_PASSWORD`
+(≥10 karakter), serta `CORS_ORIGINS=http://localhost:5173` bila memakai Vite.
+Akun bidan terbentuk otomatis saat server pertama kali hidup.
 
 **Mode development (rekomendasi saat ngoding — ada HMR):**
 ```powershell

@@ -4,6 +4,8 @@ package main
 
 import (
 	"log"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -48,6 +50,15 @@ type visit struct {
 
 func main() {
 	_ = godotenv.Load()
+
+	// Perkakas ini meng-TRUNCATE tabel kunjungan, obat, dan agenda. Dijalankan
+	// tanpa sadar di server produksi, yang terhapus adalah data klinik
+	// sungguhan dan tidak ada jalan kembali. Menolak jalan di produksi jauh
+	// lebih murah daripada mengandalkan ingatan orang yang sedang buru-buru.
+	if strings.EqualFold(os.Getenv("APP_ENV"), "production") && os.Getenv("SEED_PAKSA") != "ya" {
+		log.Fatal("APP_ENV=production: seed menolak jalan karena akan MENGHAPUS data klinik. " +
+			"Bila memang disengaja, jalankan dengan SEED_PAKSA=ya")
+	}
 
 	database := db.MustOpen()
 	defer database.Close()

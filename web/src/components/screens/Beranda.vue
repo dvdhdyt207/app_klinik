@@ -1,10 +1,22 @@
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useKlinik } from '../../stores/klinik'
+import { useAuth } from '../../stores/auth'
 import { hhmm, untilLabel } from '../../lib/format'
 import Toggle from '../ui/Toggle.vue'
 
 const k = useKlinik()
+const auth = useAuth()
+const router = useRouter()
+
+// Dikonfirmasi dulu: avatar ada di pojok header dan gampang tersenggol,
+// sementara masuk lagi menuntut mengetik sandi.
+async function keluar() {
+  if (!window.confirm('Keluar dari aplikasi?')) return
+  await auth.keluar()
+  router.replace({ name: 'masuk' })
+}
 const st = computed(() => k.status)
 const away = computed(() => !st.value.bidanHadir)
 const d = computed(() => k.derived)
@@ -20,7 +32,7 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
           <div class="eyebrow">KLINIK</div>
           <div class="clinic">Bidan Pit</div>
         </div>
-        <div class="avatar">P</div>
+        <button class="avatar" type="button" title="Keluar dari aplikasi" @click="keluar()">P</button>
       </div>
     </div>
 
@@ -166,7 +178,9 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
 .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 1.3px; color: var(--muted); }
 .clinic { font-size: 22px; font-weight: 800; letter-spacing: -.4px; margin-top: 2px; color: var(--ink); }
-.avatar { width: 42px; height: 42px; border-radius: 21px; background: #dbe6f7; color: var(--accent); font-weight: 700; display: flex; align-items: center; justify-content: center; }
+/* font-size ikut disebut: reset global hanya mewariskan font-family, dan sejak
+   avatar jadi <button> ukuran hurufnya akan mengecil ke bawaan tombol. */
+.avatar { width: 42px; height: 42px; border-radius: 21px; background: #dbe6f7; color: var(--accent); font-size: inherit; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 
 .row-between { display: flex; align-items: center; justify-content: space-between; }
 .hero-present { display: block; width: 100%; text-align: left; background: var(--accent); border-radius: 20px; padding: 20px; box-shadow: 0 12px 26px rgba(47,108,224,.28); }

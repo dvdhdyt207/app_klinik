@@ -3,10 +3,16 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"strings"
+	"syscall"
+	"time"
 
 	"github.com/joho/godotenv"
 
@@ -21,18 +27,15 @@ func env(key, def string) string {
 	return def
 }
 
-// withCORS mengizinkan Vite dev server (origin lain) memanggil API saat development.
-func withCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
+// daftar memecah nilai env berisi banyak entri dipisah koma.
+func daftar(v string) []string {
+	var out []string
+	for _, s := range strings.Split(v, ",") {
+		if s = strings.TrimSpace(s); s != "" {
+			out = append(out, s)
 		}
-		next.ServeHTTP(w, r)
-	})
+	}
+	return out
 }
 
 // spaHandler menyajikan file statis dari dir; bila path tak ada, fallback ke
@@ -62,16 +65,92 @@ func main() {
 	// Muat .env dari folder kerja (server/). Diamkan bila tak ada.
 	_ = godotenv.Load()
 
+	produksi := strings.EqualFold(env("APP_ENV", "development"), "production")
+
 	database := db.MustOpen()
 	defer database.Close()
 
-	srv := &api.Server{DB: database}
+	srv, err := api.New(database, api.Config{Produksi: produksi})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer srv.Close()
+
+	// Akun disiapkan sebelum server menerima request. Kalau ini gagal, lebih
+	// baik tidak hidup sama sekali daripada hidup tanpa penjaga.
+	ctxAwal, batalAwal := context.WithTimeout(context.Background(), 30*time.Second)
+	if err := api.PastikanAkun(ctxAwal, database, env("ADMIN_USERNAME", "bidan"), os.Getenv("ADMIN_PASSWORD")); err != nil {
+		batalAwal()
+		log.Fatal(err)
+	}
+	batalAwal()
+
 	mux := srv.Routes()
 	mux.Handle("/", spaHandler(env("WEB_DIR", "../web/dist")))
 
-	port := env("PORT", "4000")
-	log.Printf("Klinik Bidan Pit (Go) berjalan di http://localhost:%s", port)
-	if err := http.ListenAndServe(":"+port, withCORS(mux)); err != nil {
+	// Urutan pembungkus: header keamanan terluar supaya ikut terpasang pada
+	// balasan 429 dan 413 juga; batas body terdalam supaya berlaku tepat
+	// sebelum handler membaca.
+	var handler http.Handler = mux
+	handler = api.BatasBody(1<<20, handler) // 1 MB
+	handler = api.CORS(daftar(os.Getenv("CORS_ORIGINS")), handler)
+	handler = api.BatasLaju(20, 60, handler)
+	handler = api.HeaderKeamanan(produksi, handler)
+
+	// Di produksi server ini berada di belakang Caddy, jadi cukup mendengar di
+	// loopback. Kalau ufw suatu saat salah setel, port ini tetap tidak terlihat
+	// dari internet karena memang tidak terikat ke antarmuka publik.
+	alamat := env("BIND_ADDR", "127.0.0.1") + ":" + env("PORT", "4000")
+
+	httpSrv := &http.Server{
+		Addr:    alamat,
+		Handler: handler,
+		// Tanpa batas waktu, satu sambungan yang menggantung menahan slotnya
+		// selamanya — cukup beberapa untuk membuat server berhenti melayani.
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      60 * time.Second,
+		IdleTimeout:       90 * time.Second,
+		MaxHeaderBytes:    1 << 20,
+	}
+
+	// Sapu sesi mati secara berkala supaya tabelnya tidak tumbuh selamanya.
+	ctxSapu, hentikanSapu := context.WithCancel(context.Background())
+	defer hentikanSapu()
+	go func() {
+		t := time.NewTicker(6 * time.Hour)
+		defer t.Stop()
+		srv.SapuSesiKedaluwarsa(ctxSapu)
+		for {
+			select {
+			case <-ctxSapu.Done():
+				return
+			case <-t.C:
+				srv.SapuSesiKedaluwarsa(ctxSapu)
+			}
+		}
+	}()
+
+	// Berhenti dengan rapi: request yang sedang berjalan diberi waktu selesai
+	// dulu, jadi restart saat deploy tidak memutus bidan di tengah menyimpan.
+	selesai := make(chan struct{})
+	go func() {
+		sinyal := make(chan os.Signal, 1)
+		signal.Notify(sinyal, os.Interrupt, syscall.SIGTERM)
+		<-sinyal
+		log.Println("menghentikan server…")
+		ctx, batal := context.WithTimeout(context.Background(), 15*time.Second)
+		defer batal()
+		if err := httpSrv.Shutdown(ctx); err != nil {
+			log.Printf("shutdown: %v", err)
+		}
+		close(selesai)
+	}()
+
+	log.Printf("Klinik Bidan Pit (Go) mendengar di %s (produksi=%v)", alamat, produksi)
+	if err := httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
+	<-selesai
+	log.Println("server berhenti")
 }

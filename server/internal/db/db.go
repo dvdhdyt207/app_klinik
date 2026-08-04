@@ -19,10 +19,26 @@ func env(key, def string) string {
 }
 
 // Open membangun *sql.DB (pool) ke database app_klinik.
-// multiStatements=true agar skrip schema/seed bisa mengirim banyak perintah.
+//
+// multiStatements sengaja TIDAK dinyalakan. Itu hanya dibutuhkan skrip
+// schema/seed, sementara di koneksi aplikasi ia memperbesar akibat: satu celah
+// injeksi yang tadinya hanya bisa mengubah satu query berubah menjadi bisa
+// menjalankan rangkaian perintah apa pun. Skrip yang memerlukannya memakai
+// OpenMulti di bawah.
 func Open() (*sql.DB, error) {
+	return buka("")
+}
+
+// OpenMulti sama seperti Open tapi mengizinkan banyak perintah dalam satu
+// kiriman. Hanya untuk perkakas sekali jalan (schema, seed) — jangan dipakai
+// oleh server.
+func OpenMulti() (*sql.DB, error) {
+	return buka("&multiStatements=true")
+}
+
+func buka(tambahan string) (*sql.DB, error) {
 	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true&loc=Local&multiStatements=true",
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true&loc=Local"+tambahan,
 		env("DB_USER", "root"),
 		env("DB_PASSWORD", ""),
 		env("DB_HOST", "127.0.0.1"),
