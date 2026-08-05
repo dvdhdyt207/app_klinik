@@ -31,7 +31,8 @@ Prasyarat: Go, Node, MySQL hidup.
 ```powershell
 # sekali — siapkan DB
 cd server
-Get-Content migrations/schema.sql | & "C:\mysql\bin\mysql.exe" -u root -p<PASSWORD_ANDA>
+& "C:\mysql\bin\mysql.exe" -u root -p<PASSWORD_ANDA> -e "CREATE DATABASE IF NOT EXISTS app_klinik CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+Get-Content migrations/schema.sql | & "C:\mysql\bin\mysql.exe" -u root -p<PASSWORD_ANDA> app_klinik
 go run ./cmd/seed
 
 # jalankan (2 terminal)

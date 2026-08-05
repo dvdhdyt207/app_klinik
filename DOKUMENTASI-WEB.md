@@ -140,7 +140,8 @@ Prasyarat: **Go** (`go version`; jika "not recognized", tambahkan `C:\Program Fi
 **Sekali saja — siapkan DB & akun:**
 ```powershell
 cd server
-Get-Content migrations/schema.sql | & "C:\mysql\bin\mysql.exe" -u root -p<PASSWORD_ANDA>
+& "C:\mysql\bin\mysql.exe" -u root -p<PASSWORD_ANDA> -e "CREATE DATABASE IF NOT EXISTS app_klinik CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+Get-Content migrations/schema.sql | & "C:\mysql\bin\mysql.exe" -u root -p<PASSWORD_ANDA> app_klinik
 go run ./cmd/seed        # isi data contoh (idempotent; TIDAK menyentuh users/sessions)
 ```
 

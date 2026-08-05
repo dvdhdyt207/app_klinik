@@ -1,10 +1,24 @@
 -- Skema database Klinik Bidan Pit
--- MySQL 8.x. Jalankan: mysql -u root -p < schema.sql
--- Bentuk data mengikuti "State Management" pada README design handoff.
-
-CREATE DATABASE IF NOT EXISTS app_klinik
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE app_klinik;
+-- MySQL 8.x. Bentuk data mengikuti "State Management" pada README design handoff.
+--
+-- Jalankan dengan menyebut databasenya di baris perintah:
+--
+--   mysql -u root -p app_klinik < schema.sql
+--
+-- Berkas ini SENGAJA tidak memuat CREATE DATABASE maupun USE. Sebelumnya ia
+-- memuat keduanya, dan itu berarti dijalankan di mana pun ia selalu menyentuh
+-- database bernama `app_klinik` — termasuk saat yang kamu maksud database uji,
+-- atau saat di server sudah ada `app_klinik` berisi data pasien sungguhan.
+-- Nama database ditentukan pemanggilnya; berkas ini hanya menggambarkan bentuk
+-- tabelnya.
+--
+-- Databasenya dibuat terpisah, dengan collation yang eksplisit:
+--
+--   CREATE DATABASE app_klinik CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+--
+-- Collation itu penting disebut, bukan dibiarkan ikut bawaan server: ia
+-- menentukan kapan dua string dianggap sama. Perbandingan nama obat di aplikasi
+-- ini bergantung padanya.
 
 -- Akun untuk masuk ke Bidan App. Praktiknya hanya satu (bidan), tapi tabel
 -- tetap dipakai supaya menambah akun kedua tidak perlu mengubah skema.

@@ -1,0 +1,32 @@
+# Seluruh isi folder ini dikirim ke daemon Docker sebelum build dimulai. Tanpa
+# penyaringan, node_modules dan .git ikut terkirim — ratusan MB yang tidak
+# dipakai sama sekali.
+
+.git
+.github
+.gitattributes
+.claude
+
+# Dependensi & hasil build dibuat ulang di dalam image. Menyalin punya laptop
+# justru berbahaya: node_modules memuat biner yang dikompilasi untuk Windows,
+# dan server.exe jelas tidak akan jalan di Linux.
+**/node_modules
+web/dist
+server/server.exe
+server/server
+**/*.exe
+
+# RAHASIA — jangan pernah ikut ke dalam image.
+#
+# Image bisa di-push, dibagikan, atau diperiksa lapis per lapis oleh siapa pun
+# yang memilikinya, dan berkas yang dihapus di lapisan berikutnya tetap terbaca
+# di lapisan sebelumnya. Rahasia masuk saat container dijalankan lewat env_file,
+# tidak pernah saat dibangun.
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Tidak dipakai Dockerfile, cuma memperbesar konteks.
+deploy
+*.md

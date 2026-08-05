@@ -1,0 +1,34 @@
+# Akhir baris ditentukan di sini, bukan oleh setelan git tiap laptop.
+#
+# Tanpa berkas ini, `core.autocrlf=true` (bawaan Git for Windows) mengubah
+# setiap berkas teks jadi CRLF saat di-checkout. Untuk kode yang jalan di
+# Windows itu tidak apa-apa, tapi skrip yang dijalankan di server Linux jadi
+# rusak: bash membaca `set -o pipefail\r` dan menolaknya dengan pesan yang
+# tampak kacau karena \r memindahkan kursor ke awal baris.
+#
+# Dockerfile ikut terkunci LF: CRLF di dalamnya membuat `RUN` gagal dengan
+# pesan yang sama menyesatkannya.
+
+* text=auto
+
+# ---- wajib LF: dibaca atau dijalankan di Linux ----
+*.sh          text eol=lf
+*.yml         text eol=lf
+*.yaml        text eol=lf
+*.sql         text eol=lf
+Dockerfile    text eol=lf
+.dockerignore text eol=lf
+Caddyfile*    text eol=lf
+
+# ---- wajib CRLF: dijalankan PowerShell di Windows ----
+*.ps1         text eol=crlf
+
+# ---- biner: jangan disentuh sama sekali ----
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.ico   binary
+*.gif   binary
+*.woff  binary
+*.woff2 binary
+*.exe   binary

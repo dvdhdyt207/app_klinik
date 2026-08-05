@@ -1,0 +1,186 @@
+# Memeriksa, membangun image, lalu memasangnya -- di mesin yang bukan laptop siapa pun.
+#
+# Image dibangun DI SINI, bukan di server. Runner GitHub punya beberapa core dan
+# tidak sedang melayani siapa pun; VPS-nya 1 vCPU dan menjalankan dua aplikasi
+# plus MySQL. Server hanya menarik image jadi -- hitungan detik.
+#
+# CATATAN JUJUR: aplikasi ini belum punya satu pun test otomatis. Job `server`
+# di bawah hanya menjalankan `go vet` dan memastikan kodenya bisa dikompilasi —
+# itu menangkap kesalahan ketik dan tipe, bukan kesalahan logika. Jangan
+# membaca centang hijau di sini sebagai "perilakunya sudah diperiksa".
+# Menambahkan test adalah pekerjaan berikutnya yang paling berharga di repo ini.
+
+name: CI & Deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - '.gitattributes'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/dvdhdyt207/app_klinik
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          # Versinya dibaca dari go.mod, tidak ditulis ulang di sini. Satu
+          # sumber kebenaran: kalau go.mod naik versi, CI ikut sendiri.
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: Build
+        # Membuktikan kodenya mengompilasi untuk Linux sebelum Docker mencobanya.
+        # Kegagalan di sini terbaca jauh lebih jelas daripada kegagalan di
+        # tengah build image.
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 0
+        run: go build -trimpath -o /dev/null .
+
+      - name: Uji
+        # Belum ada berkas test. Perintahnya tetap dipasang supaya begitu test
+        # pertama ditulis, ia langsung ikut berjalan tanpa ada yang perlu ingat
+        # menambahkan langkah ini.
+        run: go test ./... -count=1
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # npm ci, bukan npm install: ia memasang persis apa yang tertulis di
+      # package-lock.json dan menolak kalau lock-nya tidak cocok dengan
+      # package.json.
+      - name: Pasang dependensi
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  image:
+    needs: [server, web]
+    # Image hanya didorong untuk main yang sudah lulus pemeriksaan. Pull request
+    # cukup sampai job di atas -- kodenya belum ditinjau siapa pun, dan job ini
+    # memegang hak tulis ke registry.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Hak diberikan per job, bukan di tingkat workflow, supaya job lain tidak
+      # ikut kebagian.
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Login ke GHCR
+        env:
+          # Token bawaan GitHub, berumur satu job. Tidak ada secret yang perlu
+          # dibuat atau dirotasi manusia.
+          #
+          # Lewat `env`, bukan ditempel ${{ }} di tengah `run`: kalau ditempel,
+          # isinya menjadi bagian skrip shell sebelum shell-nya jalan.
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Bangun & dorong image
+        # Dua tag: `latest` yang ditarik server, dan tag SHA supaya setiap commit
+        # punya image sendiri yang bisa dituju. Itu jalan pengembalian bila versi
+        # baru bermasalah.
+        run: |
+          docker build -t "$IMAGE:latest" -t "$IMAGE:$GITHUB_SHA" .
+          docker push "$IMAGE:latest"
+          docker push "$IMAGE:$GITHUB_SHA"
+
+  deploy:
+    needs: image
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      VPS_HOST: 103.103.23.199
+      # Akun yang sama dengan yang dipakai catering, tapi izin sudo-nya
+      # terpisah: /etc/sudoers.d/deployer-klinik hanya membolehkan
+      # /usr/local/sbin/klinik-deploy. Menghapus salah satu aplikasi tidak
+      # diam-diam mencabut hak aplikasi lainnya.
+      VPS_USER: deployer
+    steps:
+      - name: Siapkan kunci SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Kunci host diambil dari DALAM server lewat sambungan tepercaya, lalu
+          # disimpan sebagai variable repo. Itu yang membuat kita TIDAK perlu
+          # StrictHostKeyChecking=no maupun ssh-keyscan -- keduanya berarti
+          # "percaya saja apa pun yang menjawab di IP itu".
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Tarik image & nyalakan
+        # `sudo -n`: jangan pernah menunggu password. Tidak ada manusia di runner
+        # yang bisa mengetiknya.
+        #
+        # Skripnya sendiri yang menunggu aplikasi sehat dan mencetak log kalau
+        # gagal -- deployer tidak boleh menjalankan docker, jadi log itu tidak
+        # bisa diambil dari sini belakangan.
+        run: ssh "$VPS_USER@$VPS_HOST" 'sudo -n /usr/local/sbin/klinik-deploy'
+
+      - name: Periksa dari luar
+        env:
+          SITUS: https://klinik.catering-app.com
+        # Skrip di server sudah membuktikan aplikasi hidup dari dalam. Yang ini
+        # pertanyaan berbeda: bisakah bidan membukanya? Ditanya lewat internet,
+        # jadi DNS, sertifikat TLS, dan Caddy ikut teruji.
+        run: |
+          depan=$(curl -sS -o /dev/null -w '%{http_code}' "$SITUS/" || echo GAGAL)
+          api=$(curl -sS -o /dev/null -w '%{http_code}' "$SITUS/api/health" || echo GAGAL)
+          echo "halaman depan : $depan"
+          echo "api           : $api"
+          if [ "$depan" != "200" ] || [ "$api" != "200" ]; then
+            echo "::error::Situs tidak sehat dari luar setelah deploy."
+            exit 1
+          fi
+
+      - name: Petunjuk pengembalian bila gagal
+        if: failure()
+        run: |
+          echo "::warning::Kembalikan ke versi sebelumnya dari laptop:"
+          echo "  ssh vps"
+          echo "  cd /opt/klinik"
+          echo "  sudo nano compose.yml          # ganti :latest jadi :<sha>"
+          echo "  sudo docker compose pull app && sudo docker compose up -d"
+          echo "Daftar tag: https://github.com/dvdhdyt207/app_klinik/pkgs/container/app_klinik"

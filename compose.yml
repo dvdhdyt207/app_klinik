@@ -1,0 +1,70 @@
+# Susunan produksi Klinik Bidan Pit.
+#
+#   docker compose up -d              tarik image & jalankan
+#   docker compose ps                 status + hasil health check
+#   docker compose logs -f app        log aplikasi
+#
+# Reverse proxy TIDAK ada di sini — Caddy berjalan sebagai proyek compose
+# tersendiri di /opt/proxy, melayani aplikasi ini dan catering sekaligus.
+# Menaruhnya di salah satu aplikasi berarti menghentikan aplikasi itu ikut
+# mematikan proxy untuk yang lain.
+#
+# MySQL juga tidak: satu MySQL native di host melayani kedua aplikasi, dengan
+# database dan pengguna terpisah.
+
+services:
+  app:
+    # Image dibangun di GitHub Actions lalu didorong ke GHCR; server cukup
+    # menariknya. Di VPS 1 vCPU, membangun sendiri berarti menit-menit CPU penuh
+    # setiap deploy pada mesin yang juga sedang melayani.
+    #
+    # Blok `build` tetap ada supaya `docker compose up --build` masih bekerja di
+    # laptop dan sebagai jalan darurat bila registry tidak bisa dijangkau.
+    image: ghcr.io/dvdhdyt207/app_klinik:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: klinik
+    restart: unless-stopped
+
+    # network_mode: host membuat container memakai jaringan mesin secara
+    # langsung, jadi DB_HOST=127.0.0.1 tetap berlaku apa adanya dan MySQL tidak
+    # perlu disetel ulang: bind-address tetap 127.0.0.1 dan pengguna
+    # 'klinik'@'localhost' tetap cocok.
+    #
+    # Aplikasi mendengar di 127.0.0.1:4000 sesuai BIND_ADDR/PORT di .env —
+    # catering memakai 8080, jadi keduanya tidak berebut.
+    network_mode: host
+
+    env_file:
+      - ./.env
+
+    environment:
+      # Tanpa ini container berjalan di UTC. Waktu kunjungan pasien akan
+      # tercatat tujuh jam meleset — salah yang tidak menimbulkan error, jadi
+      # tidak ketahuan sampai ada yang memeriksa tanggalnya.
+      TZ: Asia/Jakarta
+
+    # Container jalan belum tentu aplikasi melayani: prosesnya bisa hidup
+    # sementara koneksi database gagal. /api/health sengaja tidak memuat data
+    # apa pun dan tidak menuntut login, jadi aman dipanggil sesering ini.
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    # Pagar pengaman di server 2 GB yang juga menjalankan catering dan MySQL:
+    # kalau aplikasi bocor memori, Docker yang menghentikannya lebih dulu
+    # sebelum kernel memilih korban sendiri — dan pilihan kernel biasanya MySQL,
+    # karena ia yang paling besar.
+    mem_limit: 300m
+
+    # Tanpa batas ini log container tumbuh sampai disk penuh; Docker tidak punya
+    # rotasi bawaan seperti journald.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
