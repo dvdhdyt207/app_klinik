@@ -4,6 +4,7 @@ import Beranda from '../components/screens/Beranda.vue'
 import Kunjungan from '../components/screens/Kunjungan.vue'
 import Stok from '../components/screens/Stok.vue'
 import Rekap from '../components/screens/Rekap.vue'
+import Akun from '../components/screens/Akun.vue'
 import TabBar from '../components/TabBar.vue'
 import VisitModal from '../components/modals/VisitModal.vue'
 import PickModal from '../components/modals/PickModal.vue'
@@ -33,6 +34,7 @@ const k = useKlinik()
           <Kunjungan v-else-if="k.screen === 'kunjungan'" />
           <Stok v-else-if="k.screen === 'stok'" />
           <Rekap v-else-if="k.screen === 'rekap'" />
+          <Akun v-else-if="k.screen === 'akun'" />
         </div>
       </div>
 

@@ -40,6 +40,7 @@ export const api = {
   login: (body) => req('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   logout: () => req('/auth/logout', { method: 'POST' }),
   me: () => req('/auth/me'),
+  gantiSandi: (body) => req('/auth/password', { method: 'POST', body: JSON.stringify(body) }),
 
   getState: () => req('/state'),
   publicStatus: () => req('/public/status'),

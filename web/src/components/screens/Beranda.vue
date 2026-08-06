@@ -1,22 +1,11 @@
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useKlinik } from '../../stores/klinik'
-import { useAuth } from '../../stores/auth'
 import { hhmm, untilLabel } from '../../lib/format'
 import Toggle from '../ui/Toggle.vue'
 
 const k = useKlinik()
-const auth = useAuth()
-const router = useRouter()
 
-// Dikonfirmasi dulu: avatar ada di pojok header dan gampang tersenggol,
-// sementara masuk lagi menuntut mengetik sandi.
-async function keluar() {
-  if (!window.confirm('Keluar dari aplikasi?')) return
-  await auth.keluar()
-  router.replace({ name: 'masuk' })
-}
 const st = computed(() => k.status)
 const away = computed(() => !st.value.bidanHadir)
 const d = computed(() => k.derived)
@@ -32,7 +21,7 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
           <div class="eyebrow">KLINIK</div>
           <div class="clinic">Bidan Pit</div>
         </div>
-        <button class="avatar" type="button" title="Keluar dari aplikasi" @click="keluar()">P</button>
+        <button class="avatar" type="button" title="Akun" @click="k.goScreen('akun')">P</button>
       </div>
     </div>
 
