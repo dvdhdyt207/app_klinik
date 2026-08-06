@@ -87,6 +87,8 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.HandleFunc("PUT /api/events/{id}", s.wajibLogin(s.updateEvent))
 	mux.HandleFunc("DELETE /api/events/{id}", s.wajibLogin(s.deleteEvent))
 	mux.HandleFunc("POST /api/medicines/stock", s.wajibLogin(s.addStock))
+	mux.HandleFunc("PUT /api/medicines/{id}", s.wajibLogin(s.updateMedicine))
+	mux.HandleFunc("DELETE /api/medicines/{id}", s.wajibLogin(s.deleteMedicine))
 	mux.HandleFunc("POST /api/visits", s.wajibLogin(s.createVisit))
 
 	return mux
@@ -123,8 +125,14 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	}
 }
 
+// writeErr membalas galat yang memang layak dibaca pemakai (nama bentrok,
+// baris tidak ditemukan) — beda dari serverError, yang menyembunyikan sebabnya.
+func writeErr(w http.ResponseWriter, status int, msg string) {
+	writeJSON(w, status, map[string]string{"error": msg})
+}
+
 func badRequest(w http.ResponseWriter, msg string) {
-	writeJSON(w, http.StatusBadRequest, map[string]string{"error": msg})
+	writeErr(w, http.StatusBadRequest, msg)
 }
 
 // serverError mencatat sebabnya di log server dan membalas pesan umum.

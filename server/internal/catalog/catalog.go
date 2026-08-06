@@ -47,20 +47,19 @@ type Item struct {
 	Cat  string `json:"cat"`
 }
 
-// CATALOG: daftar obat master (untuk pencarian & buat obat baru).
-var CATALOG = []Item{
-	{"Paracetamol 500mg", "Tablet"},
-	{"Paracetamol sirup", "Sirup"},
-	{"Amoxicillin 500mg", "Tablet"},
-	{"Amoxicillin sirup", "Sirup"},
-	{"Ibuprofen 400mg", "Tablet"},
-	{"Asam Mefenamat 500mg", "Tablet"},
-	{"Cetirizine 10mg", "Tablet"},
-	{"CTM 4mg", "Tablet"},
-	{"Antasida", "Tablet"},
-	{"Vitamin B Complex", "Tablet"},
-	{"Vitamin C 500mg", "Tablet"},
-	{"Domperidone 10mg", "Tablet"},
-	{"Dexamethasone 0.5mg", "Tablet"},
-	{"Oralit", "Sachet"},
+// CATALOG sengaja kosong. Dulu ia memuat 14 obat contoh dari design handoff,
+// dan itu keliru: daftar obat adalah DATA milik klinik, bukan aturan bisnis.
+// Obat karangan yang tidak pernah dimiliki klinik ikut muncul di pencarian dan
+// tidak bisa dihapus tanpa deploy ulang.
+//
+// Sumber daftar obat sekarang tabel `medicines` — apa yang benar-benar
+// distok bidan. Lihat PickModal.vue.
+var CATALOG = []Item{}
+
+// ValidCat: kategori yang dikenal. Dipakai sebelum menulis ke kolom `cat`,
+// yang bertipe ENUM di MySQL — nilai di luar daftar ditolak database dengan
+// pesan yang tidak menjelaskan apa-apa bagi pemakainya.
+func ValidCat(cat string) bool {
+	_, ok := CAT[cat]
+	return ok
 }

@@ -21,14 +21,20 @@ const d = computed(() => k.derived)
     <div v-if="d.medsList.length" class="kartu">
       <ul class="rows">
         <li v-for="m in d.medsList" :key="m.id" class="row">
-          <span class="dot" :style="{ background: m.dot }" aria-hidden="true" />
-          <div class="grow">
-            <p class="r-name">{{ m.name }}</p>
-            <p class="r-sub">{{ m.cat }}</p>
-          </div>
-          <span class="r-qty" :style="{ color: m.qtyColor }">
-            {{ m.qty }}<i class="r-unit">{{ m.unit }}</i>
-          </span>
+          <!-- Barisnya tombol, bukan <li> ber-@click: hanya elemen tombol yang
+               bisa dicapai lewat Tab dan ditekan dengan Enter. -->
+          <button class="rowbtn" @click="k.openMedEdit(m)">
+            <span class="dot" :style="{ background: m.dot }" aria-hidden="true" />
+            <span class="grow">
+              <span class="r-name">{{ m.name }}</span>
+              <span class="r-sub">{{ m.cat }}</span>
+            </span>
+            <span class="r-qty" :style="{ color: m.qtyColor }">
+              {{ m.qty }}<i class="r-unit">{{ m.unit }}</i>
+            </span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
         </li>
       </ul>
     </div>
@@ -53,12 +59,22 @@ const d = computed(() => k.derived)
 
 .kartu { background: var(--card); border: 1px solid var(--line); border-radius: var(--ra-lg); }
 .rows { list-style: none; margin: 0; padding: 0; }
-.row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
 .row + .row { border-top: 1px solid var(--hair); }
-.grow { flex: 1; min-width: 0; }
+/* Padding tinggal di tombol, bukan di <li>: kalau di luar, daerah yang bisa
+   diketuk berhenti sebelum tepi baris — dan yang meleset justru sentuhan di
+   pinggir, yang paling sering terjadi saat aplikasi dipakai satu tangan. */
+.rowbtn {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; padding: 12px 16px; text-align: left;
+  border-radius: inherit; transition: background .15s ease;
+}
+.rowbtn:hover { background: var(--fill2); }
+.grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin: 0 1px; }
-.r-name { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.35; }
-.r-sub { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
+.r-name { font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+.r-sub { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.chev { color: var(--muted2); flex-shrink: 0; }
+.rowbtn:hover .chev { color: var(--accent); }
 /* Jaraknya diatur di sini, bukan lewat spasi di dalam template: kompilator
    Vue merapatkan spasi tepi, dan hasilnya terbaca "8butir". */
 .r-qty { font-size: 15px; font-weight: 700; white-space: nowrap; }
@@ -77,6 +93,6 @@ const d = computed(() => k.derived)
   .rows > .row { border-top: 1px solid var(--hair); }
   .rows > .row:nth-child(1), .rows > .row:nth-child(2) { border-top: none; }
   .rows > .row:nth-child(odd) { border-right: 1px solid var(--hair); }
-  .row { padding: 13px 20px; }
+  .rowbtn { padding: 13px 20px; }
 }
 </style>

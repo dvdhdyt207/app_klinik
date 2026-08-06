@@ -14,23 +14,17 @@ export const threshold = (cat) => (CAT[cat] || CAT.Tablet).thr
 export const isLow = (cat, qty) => qty <= threshold(cat)
 export const isDanger = (cat, qty) => qty <= threshold(cat) * 0.5
 
-// Katalog master obat untuk fitur "Cari Obat"
-export const CATALOG = [
-  { name: 'Paracetamol 500mg', cat: 'Tablet' },
-  { name: 'Paracetamol sirup', cat: 'Sirup' },
-  { name: 'Amoxicillin 500mg', cat: 'Tablet' },
-  { name: 'Amoxicillin sirup', cat: 'Sirup' },
-  { name: 'Ibuprofen 400mg', cat: 'Tablet' },
-  { name: 'Asam Mefenamat 500mg', cat: 'Tablet' },
-  { name: 'Cetirizine 10mg', cat: 'Tablet' },
-  { name: 'CTM 4mg', cat: 'Tablet' },
-  { name: 'Antasida', cat: 'Tablet' },
-  { name: 'Vitamin B Complex', cat: 'Tablet' },
-  { name: 'Vitamin C 500mg', cat: 'Tablet' },
-  { name: 'Domperidone 10mg', cat: 'Tablet' },
-  { name: 'Dexamethasone 0.5mg', cat: 'Tablet' },
-  { name: 'Oralit', cat: 'Sachet' },
-]
+// Daftar kategori untuk pilihan di layar ubah obat. Urutannya menentukan
+// urutan tampil.
+export const KATEGORI = Object.keys(CAT)
+
+// TIDAK ADA daftar obat di berkas ini. Dulu ada 14 obat contoh dari design
+// handoff, dan itu keliru: daftar obat adalah data milik klinik, bukan aturan
+// hitungan. Obat karangan ikut muncul di pencarian dan tidak bisa dihapus
+// tanpa deploy ulang.
+//
+// Sumbernya sekarang tabel `medicines` di database — apa yang benar-benar
+// distok bidan. Lihat PickModal.vue.
 
 // Tint kategori untuk avatar/kotak (bg + warna teks). var(), bukan hex — lihat
 // alasannya di komentar COL pada stores/klinik.js.

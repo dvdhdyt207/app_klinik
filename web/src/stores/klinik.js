@@ -139,6 +139,57 @@ export const useKlinik = defineStore('klinik', () => {
   }
   function closeAddStock() { stockTarget.value = null; modal.value = null }
 
+  // ---- ubah / hapus obat ----
+  // qty disimpan sebagai string: input kosong harus terlihat kosong, bukan 0 —
+  // kalau tidak, menghapus isinya untuk mengetik ulang langsung menampilkan
+  // angka yang bukan hasil ketikan siapa pun.
+  const medDraft = ref(null)
+  const medErr = ref(null)
+  const medBusy = ref(false)
+  const medHapusConfirm = ref(false)
+
+  function openMedEdit(m) {
+    medDraft.value = { id: m.id, name: m.name, cat: m.cat, qty: String(m.qty) }
+    medErr.value = null; medHapusConfirm.value = false; modal.value = 'med'
+  }
+  function closeMedEdit() {
+    medDraft.value = null; medErr.value = null; medHapusConfirm.value = false; modal.value = null
+  }
+
+  async function saveMed() {
+    const d = medDraft.value
+    if (!d || medBusy.value) return
+    const name = (d.name || '').trim()
+    if (!name) { medErr.value = 'Nama obat tidak boleh kosong.'; return }
+    const qty = parseInt(d.qty, 10)
+    if (!Number.isFinite(qty) || qty < 0) { medErr.value = 'Jumlah harus 0 atau lebih.'; return }
+    medBusy.value = true
+    try {
+      // Pesan galat dari server dipakai apa adanya (mis. nama bentrok) — ia
+      // tahu keadaan database, sementara layar ini hanya memegang salinan.
+      await api.updateMedicine(d.id, { name, cat: d.cat, qty })
+      closeMedEdit(); refresh()
+    } catch (e) {
+      medErr.value = e.message || 'Gagal menyimpan.'
+    } finally {
+      medBusy.value = false
+    }
+  }
+
+  async function hapusMed() {
+    const d = medDraft.value
+    if (!d || medBusy.value) return
+    medBusy.value = true
+    try {
+      await api.deleteMedicine(d.id)
+      closeMedEdit(); refresh()
+    } catch (e) {
+      medErr.value = e.message || 'Gagal menghapus.'
+    } finally {
+      medBusy.value = false
+    }
+  }
+
   // ---- visit ----
   function openVisit() { draft.value = emptyDraft(); modal.value = 'visit' }
   async function saveVisit() {
@@ -226,6 +277,7 @@ export const useKlinik = defineStore('klinik', () => {
     data, loading, error, now, status, profil, simpanProfil,
     screen, modal, rekapTab, pickContext, query,
     draft, awayDraft, eventDraft, stockTarget, stockUnitIdx, stockCount,
+    medDraft, medErr, medBusy, medHapusConfirm, openMedEdit, closeMedEdit, saveMed, hapusMed,
     derived, refresh,
     setHadir, openAway, confirmAway, extend,
     openEventForm, saveEvent, deleteEvent, openJadwal, openEventNew, backJadwal,

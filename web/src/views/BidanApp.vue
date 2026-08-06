@@ -13,6 +13,7 @@ import JadwalModal from '../components/modals/JadwalModal.vue'
 import EventFormModal from '../components/modals/EventFormModal.vue'
 import AddStockSheet from '../components/modals/AddStockSheet.vue'
 import AwaySheet from '../components/modals/AwaySheet.vue'
+import MedEditModal from '../components/modals/MedEditModal.vue'
 
 const k = useKlinik()
 
@@ -29,6 +30,7 @@ function padaEsc(e) {
   if (e.key !== 'Escape' || !k.modal) return
   if (k.modal === 'pick') k.backFromPick()
   else if (k.modal === 'event') k.backJadwal()
+  else if (k.modal === 'med') k.closeMedEdit()
   else k.closeModal()
 }
 onMounted(() => window.addEventListener('keydown', padaEsc))
@@ -78,6 +80,7 @@ onUnmounted(() => window.removeEventListener('keydown', padaEsc))
       <EventFormModal />
       <AddStockSheet />
       <AwaySheet />
+      <MedEditModal />
     </template>
   </div>
 </template>
