@@ -29,20 +29,29 @@ const opts = [
 
     <div class="actions">
       <button class="btn-ghost" @click="k.closeModal()">Batal</button>
-      <button class="btn dark grow2" @click="k.confirmAway()">Set Keluar</button>
+      <button class="btn grow2" @click="k.confirmAway()">Simpan status keluar</button>
     </div>
   </BottomSheet>
 </template>
 
 <style scoped>
-.title { font-size: 20px; font-weight: 800; color: var(--ink); margin-bottom: 3px; }
-.sub { font-size: 12.5px; color: var(--muted); margin-bottom: 18px; }
-.note { background: var(--fill2); margin: 7px 0 16px; }
+.title { font-size: 17px; font-weight: 700; letter-spacing: -.015em; color: var(--ink); margin-bottom: 3px; }
+.sub { font-size: 12.5px; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+.note { margin: 7px 0 16px; }
 .chips { display: flex; gap: 8px; margin: 8px 0 20px; flex-wrap: wrap; }
-.chip { padding: 9px 14px; border-radius: 12px; background: var(--fill); color: var(--text-secondary); font-size: 13px; font-weight: 700; }
-.chip.sel { background: var(--ink); color: #fff; }
+.chip {
+  min-height: 38px; padding: 0 14px; border-radius: var(--ra-md);
+  background: var(--fill); color: var(--text-secondary); font-size: 13px; font-weight: 600;
+}
+.chip:hover { color: var(--ink); }
+/* Pilihan terpilih memakai warna aksen, bukan hitam pekat: hitam di sini tidak
+   berarti apa-apa, ia cuma "yang paling gelap". */
+.chip.sel { background: var(--accent-soft); color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent); }
 .actions { display: flex; gap: 10px; }
-.btn-ghost { flex: 1; padding: 15px; border-radius: 14px; background: var(--fill); color: var(--text-secondary); font-size: 15px; font-weight: 700; }
-.btn.dark { background: var(--ink); }
+.btn-ghost {
+  flex: 1; min-height: 44px; padding: 0 16px; border-radius: var(--ra-md);
+  background: var(--fill); color: var(--text-secondary); font-size: 14.5px; font-weight: 600;
+}
+.btn-ghost:hover { color: var(--ink); }
 .grow2 { flex: 2; }
 </style>

@@ -6,7 +6,15 @@ defineEmits(['back'])
 
 <template>
   <div class="mh">
-    <button class="back" @click="$emit('back')">‹</button>
+    <!-- Ikon SVG, bukan karakter "‹": tinggi dan garis dasar glif mengikuti
+         font, jadi ia tidak pernah benar-benar di tengah kotaknya dan dulu
+         diakali dengan padding-bottom. -->
+    <button class="back" aria-label="Kembali" @click="$emit('back')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+    </button>
     <span class="title">{{ title }}</span>
     <slot name="right" />
   </div>
@@ -21,7 +29,7 @@ defineEmits(['back'])
 .back {
   width: 32px; height: 32px; border-radius: var(--ra-md); background: var(--fill);
   display: flex; align-items: center; justify-content: center;
-  font-size: 19px; color: var(--text-secondary); line-height: 1; padding-bottom: 2px;
+  color: var(--text-secondary); flex-shrink: 0;
   transition: background .15s ease;
 }
 .back:hover { background: var(--accent-soft); color: var(--accent-ink); }

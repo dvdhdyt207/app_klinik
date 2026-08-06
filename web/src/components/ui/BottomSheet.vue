@@ -14,14 +14,16 @@ defineEmits(['close'])
 </template>
 
 <style scoped>
+/* Lapisan gelap sheet ini satu-satunya untuk modal jenis sheet — lihat catatan
+   di BidanApp.vue soal kenapa lapisan milik layar tidak boleh ikut dipasang. */
 .sheet-backdrop {
   position: absolute; inset: 0; z-index: 30;
-  background: rgba(16, 22, 30, .4);
+  background: rgba(20, 33, 28, .45);
   display: flex; flex-direction: column; justify-content: flex-end;
 }
 .sheet {
-  background: #fff; border-top-left-radius: 22px; border-top-right-radius: 22px;
-  padding: 20px 20px 26px; animation: sheet-up .25s ease;
+  background: #fff; border-top-left-radius: 16px; border-top-right-radius: 16px;
+  padding: 18px 18px 24px; animation: sheet-up .25s ease;
   max-height: 90%; overflow-y: auto;
 }
 .handle { width: 40px; height: 4px; border-radius: 2px; background: var(--input-border); margin: 0 auto 16px; }
@@ -30,8 +32,8 @@ defineEmits(['close'])
 @media (min-width: 920px) {
   .sheet-backdrop { justify-content: center; align-items: center; padding: 24px; }
   .sheet {
-    width: min(460px, 92vw); max-height: 86vh;
-    border-radius: 22px; padding: 24px 24px 26px;
+    width: min(440px, 92vw); max-height: 86vh;
+    border-radius: var(--ra-lg); padding: 22px;
     animation: dialog-pop .2s ease;
   }
   .handle { display: none; }

@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted, onUnmounted } from 'vue'
 import { useKlinik } from '../stores/klinik'
 import Beranda from '../components/screens/Beranda.vue'
 import Kunjungan from '../components/screens/Kunjungan.vue'
@@ -14,6 +15,24 @@ import AddStockSheet from '../components/modals/AddStockSheet.vue'
 import AwaySheet from '../components/modals/AwaySheet.vue'
 
 const k = useKlinik()
+
+// Modal yang memakai BottomSheet — keduanya sudah membawa lapisan gelapnya
+// sendiri, jadi lapisan milik layar ini tidak boleh ikut dipasang.
+const SHEET = new Set(['away', 'addstock'])
+
+// Esc menutup dialog. Diperlukan karena lapisan gelap sengaja TIDAK menutup
+// saat diklik: satu salah sentuh di tepi layar tidak boleh menghapus catatan
+// kunjungan yang sedang diketik. Esc adalah jalan keluar yang disengaja, dan
+// ia mengikuti tombol kembali masing-masing modal — bukan langsung membuang
+// semuanya saat sedang memilih obat di atas form kunjungan.
+function padaEsc(e) {
+  if (e.key !== 'Escape' || !k.modal) return
+  if (k.modal === 'pick') k.backFromPick()
+  else if (k.modal === 'event') k.backJadwal()
+  else k.closeModal()
+}
+onMounted(() => window.addEventListener('keydown', padaEsc))
+onUnmounted(() => window.removeEventListener('keydown', padaEsc))
 </script>
 
 <template>
@@ -40,13 +59,18 @@ const k = useKlinik()
 
       <TabBar />
 
-      <!-- Lapisan gelap di belakang dialog (hanya layar lebar; di HP modalnya
-           menutupi layar penuh sehingga tidak ada yang perlu diredupkan).
-           Sebelumnya ini dikerjakan trik `box-shadow: 0 0 0 100vmax` pada
-           .fullmodal — nilainya terpasang tapi hasilnya tidak terlihat, dan
-           bayangan tidak bisa diklik untuk menutup. Elemen sungguhan lebih
-           mudah ditebak dan sekaligus memberi cara keluar dari dialog. -->
-      <div v-if="k.modal" class="backdrop" @click="k.closeModal()" />
+      <!-- Lapisan gelap di belakang dialog layar-lebar (di HP modalnya menutupi
+           layar penuh, jadi tidak ada yang perlu diredupkan).
+
+           TIDAK dipasang untuk bottom sheet: BottomSheet sudah membawa lapisan
+           gelapnya sendiri. Dipasang berdua, lapisan ini justru duduk DI ATAS
+           sheet-nya — layar jadi gelap dua kali dan sekali sentuh di mana pun
+           langsung menutup sheet yang baru saja dibuka.
+
+           Sengaja tanpa @click penutup: satu-satunya dialog yang panjang di sini
+           adalah pencatatan kunjungan, dan menutupnya karena salah sentuh di
+           tepi layar berarti ketikan rekam medis hilang tanpa peringatan. -->
+      <div v-if="k.modal && !SHEET.has(k.modal)" class="backdrop" />
 
       <VisitModal />
       <PickModal />
