@@ -63,6 +63,13 @@ export function countdown(ts) {
   const h = Math.floor(m / 60), mm = m % 60; return '± ' + h + ' jam' + (mm ? ' ' + mm + ' mnt' : '') + ' lagi'
 }
 
+const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+// "Rabu, 6 Agustus 2026" — dipakai di kepala Beranda.
+export function tanggalPanjang(ts) {
+  const d = new Date(ts)
+  return HARI[d.getDay()] + ', ' + d.getDate() + ' ' + BL_FULL[d.getMonth()] + ' ' + d.getFullYear()
+}
+
 // Monogram logo dari nama klinik. Dipakai halaman pasien, sidebar Bidan App,
 // dan avatar Beranda — satu fungsi, karena nama klinik bisa diubah bidan lewat
 // Setelan dan logo yang tidak ikut berubah akan jadi satu-satunya bagian

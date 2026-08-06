@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useKlinik } from '../../stores/klinik'
-import { hhmm, untilLabel, monogram } from '../../lib/format'
+import { hhmm, untilLabel, monogram, tanggalPanjang } from '../../lib/format'
 import Toggle from '../ui/Toggle.vue'
 
 const k = useKlinik()
@@ -12,6 +12,7 @@ const st = computed(() => k.status)
 const away = computed(() => !st.value.bidanHadir)
 const d = computed(() => k.derived)
 const untilText = computed(() => { void k.now; return st.value.awayUntil ? untilLabel(st.value.awayUntil) : '' })
+const hariIni = computed(() => { void k.now; return tanggalPanjang(Date.now()) })
 </script>
 
 <template>
@@ -19,61 +20,64 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
     <header class="b-head">
       <div class="head">
         <div class="head-id"><p class="clinic">{{ namaKlinik }}</p></div>
-        <h1 class="page-title">Beranda</h1>
+        <div class="head-desk">
+          <h1 class="page-title">Beranda</h1>
+          <p class="page-date">{{ hariIni }}</p>
+        </div>
         <button class="avatar" type="button" title="Setelan" @click="k.goScreen('akun')">{{ inisial }}</button>
       </div>
     </header>
 
-    <!-- ===== status + dua angka: SATU permukaan, bukan dua kartu ===== -->
+    <!-- ===== status ===== -->
     <section class="b-status">
       <div class="kartu status" :class="away ? 'is-away' : 'is-here'">
-        <div class="s-main">
-          <!-- Titik warna + judul, tanpa label kapital di atasnya: keduanya dulu
-               mengatakan hal yang persis sama, bertumpuk. -->
-          <div class="s-row">
-            <p class="s-title">
-              <span class="s-dot" aria-hidden="true" />{{ away ? 'Tidak di klinik' : 'Sedang di klinik' }}
-            </p>
-            <button v-if="!away" class="s-toggle" aria-label="Atur status keluar" @click="k.openAway()">
-              <Toggle :on="true" variant="small" />
-            </button>
-            <button v-else class="s-toggle" aria-label="Tandai sudah kembali" @click="k.setHadir()">
-              <Toggle :on="false" variant="small" />
-            </button>
-          </div>
-
-          <template v-if="away">
-            <p v-if="st.awayNote" class="s-note">{{ st.awayNote }}</p>
-            <p class="s-meta">
-              <template v-if="st.awayUntil">Perkiraan kembali <b>{{ hhmm(st.awayUntil) }}</b> · {{ untilText }}</template>
-              <template v-else>Waktu kembali belum dipastikan</template>
-            </p>
-            <div class="s-actions">
-              <button class="btn-ghost" @click="k.extend(15)">+15 mnt</button>
-              <button class="btn-ghost" @click="k.extend(30)">+30 mnt</button>
-              <button class="btn-ghost" @click="k.openAway()">Ubah</button>
-              <button class="btn-solid" @click="k.setHadir()">Saya sudah kembali</button>
-            </div>
-          </template>
-          <p v-else class="s-meta">Pasien melihat status ini terbuka. Ketuk sakelar untuk mengatur status keluar.</p>
-
-          <router-link to="/" class="s-web">
-            Lihat halaman pasien
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg>
-          </router-link>
+        <div class="s-row">
+          <p class="s-title">
+            <span class="s-dot" aria-hidden="true" />{{ away ? 'Tidak di klinik' : 'Sedang di klinik' }}
+          </p>
+          <button v-if="!away" class="s-toggle" aria-label="Atur status keluar" @click="k.openAway()">
+            <Toggle :on="true" variant="small" />
+          </button>
+          <button v-else class="s-toggle" aria-label="Tandai sudah kembali" @click="k.setHadir()">
+            <Toggle :on="false" variant="small" />
+          </button>
         </div>
 
-        <!-- Dua angka duduk di dalam kartu status, dipisah garis rambut. Sebagai
-             kartu tersendiri mereka menambah satu kotak lagi ke layar tanpa
-             menambah arti apa pun. -->
-        <div class="s-angka">
-          <div class="ang">
-            <span class="ang-num">{{ d.todayCount }}</span>
-            <span class="ang-lbl">Kunjungan hari ini</span>
+        <template v-if="away">
+          <p v-if="st.awayNote" class="s-note">{{ st.awayNote }}</p>
+          <p class="s-meta">
+            <template v-if="st.awayUntil">Perkiraan kembali <b>{{ hhmm(st.awayUntil) }}</b> · {{ untilText }}</template>
+            <template v-else>Waktu kembali belum dipastikan</template>
+          </p>
+          <div class="s-actions">
+            <button class="btn-ghost" @click="k.extend(15)">+15 mnt</button>
+            <button class="btn-ghost" @click="k.extend(30)">+30 mnt</button>
+            <button class="btn-ghost" @click="k.openAway()">Ubah</button>
+            <button class="btn-solid" @click="k.setHadir()">Saya sudah kembali</button>
           </div>
-          <button class="ang is-link" @click="k.goScreen('stok')">
-            <span class="ang-num" :class="{ 'is-warn': d.lowCount > 0 }">{{ d.lowCount }}</span>
-            <span class="ang-lbl">Obat menipis</span>
+        </template>
+        <p v-else class="s-meta">Pasien melihat status ini terbuka. Ketuk sakelar untuk mengatur status keluar.</p>
+
+        <router-link to="/" class="s-web">
+          Lihat halaman pasien
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg>
+        </router-link>
+      </div>
+    </section>
+
+    <!-- ===== ringkasan hari ini: kartu tersendiri, tidak menyatu dgn status ===== -->
+    <section class="b-angka">
+      <div class="kartu ringkas">
+        <p class="rk-label">Hari ini</p>
+        <div class="rk-rows">
+          <div class="rk-row">
+            <span class="rk-num">{{ d.todayCount }}</span>
+            <span class="rk-lbl">Kunjungan tercatat</span>
+          </div>
+          <button class="rk-row is-link" @click="k.goScreen('stok')">
+            <span class="rk-num" :class="{ 'is-warn': d.lowCount > 0 }">{{ d.lowCount }}</span>
+            <span class="rk-lbl">Obat menipis</span>
+            <svg class="rk-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
       </div>
@@ -85,9 +89,9 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
         <h2 class="sec-title">Kunjungan terakhir</h2>
         <button class="sec-link" @click="k.goScreen('kunjungan')">Semua</button>
       </div>
-      <div class="kartu">
+      <div class="kartu isi">
         <ul v-if="d.visitCards.length" class="rows">
-          <li v-for="v in d.visitCards.slice(0, 5)" :key="v.id" class="row">
+          <li v-for="v in d.visitCards.slice(0, 4)" :key="v.id" class="row">
             <span class="ava" aria-hidden="true">{{ v.initial }}</span>
             <span class="grow">
               <span class="r-name">{{ v.name }}</span>
@@ -105,7 +109,7 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
         <h2 class="sec-title">Stok menipis</h2>
         <button class="sec-link" @click="k.goScreen('stok')">Semua</button>
       </div>
-      <div class="kartu">
+      <div class="kartu isi">
         <ul v-if="d.low.length" class="rows">
           <li v-for="m in d.low" :key="m.id" class="row">
             <span class="dot" :style="{ background: m.color }" aria-hidden="true" />
@@ -125,9 +129,9 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
         <h2 class="sec-title">Jadwal &amp; agenda</h2>
         <button class="sec-link" @click="k.openJadwal()">Kelola</button>
       </div>
-      <div class="kartu">
+      <div class="kartu isi">
         <ul v-if="d.upcoming.length" class="rows">
-          <li v-for="e in d.upcoming.slice(0, 5)" :key="e.id" class="row">
+          <li v-for="e in d.upcoming.slice(0, 4)" :key="e.id" class="row">
             <span class="dot" :style="{ background: e.dot }" aria-hidden="true" />
             <span class="grow">
               <span class="r-name">{{ e.title }}</span>
@@ -143,11 +147,11 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
 
 <style scoped>
 /* ================= HP (bawaan) ================= */
-.screen { padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 22px; }
+.screen { padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 20px; }
 
 .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .head-id { min-width: 0; }
-.page-title { display: none; }
+.head-desk { display: none; }
 .clinic { font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); margin: 0; line-height: 1.25; overflow-wrap: anywhere; }
 .avatar {
   width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0;
@@ -157,12 +161,10 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
 }
 .avatar:hover { background: var(--accent-soft); color: var(--accent-ink); }
 
-/* ---- permukaan dasar: satu kartu per bagian ---- */
 .kartu { background: var(--card); border: 1px solid var(--line); border-radius: var(--ra-lg); }
 
 /* ---- status ---- */
-.status { overflow: hidden; }
-.s-main { padding: 16px 18px 14px; }
+.status { padding: 16px 18px 14px; }
 .s-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .s-title {
   display: inline-flex; align-items: center; gap: 9px; margin: 0;
@@ -183,7 +185,7 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
   background: var(--fill); color: var(--text-secondary);
   font-size: 13px; font-weight: 600;
 }
-.btn-ghost:hover { background: var(--fill); color: var(--ink); }
+.btn-ghost:hover { color: var(--ink); }
 .btn-solid {
   flex: 1; min-width: 150px; min-height: 38px; padding: 0 16px; border-radius: var(--ra-md);
   background: var(--accent); color: #fff; font-size: 13px; font-weight: 600;
@@ -196,14 +198,24 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
 }
 .s-web:hover { color: var(--accent); }
 
-/* dua angka: dipisah garis rambut, bukan kartu terpisah */
-.s-angka { display: flex; border-top: 1px solid var(--hair); }
-.ang { flex: 1; display: flex; flex-direction: column; gap: 1px; padding: 12px 18px; text-align: left; }
-.ang + .ang { border-left: 1px solid var(--hair); }
-.ang.is-link:hover { background: var(--fill2); }
-.ang-num { font-size: 21px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); line-height: 1.15; }
-.ang-num.is-warn { color: var(--away); }
-.ang-lbl { font-size: 12px; color: var(--muted); }
+/* ---- ringkasan hari ini (kartu sendiri) ---- */
+.ringkas { padding: 14px 18px 6px; display: flex; flex-direction: column; }
+.rk-label {
+  margin: 0 0 4px; font-size: var(--micro); font-weight: 700;
+  letter-spacing: .09em; text-transform: uppercase; color: var(--muted);
+}
+.rk-rows { display: flex; flex-direction: column; flex: 1; }
+.rk-row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 0; text-align: left;
+  border-radius: var(--ra-sm);
+}
+.rk-row + .rk-row { border-top: 1px solid var(--hair); }
+.rk-num { font-size: 22px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); line-height: 1; min-width: 30px; }
+.rk-num.is-warn { color: var(--away); }
+.rk-lbl { flex: 1; font-size: 13px; color: var(--text-secondary); }
+.rk-chev { color: var(--muted2); flex-shrink: 0; }
+.rk-row.is-link:hover .rk-lbl { color: var(--ink); }
+.rk-row.is-link:hover .rk-chev { color: var(--accent); }
 
 /* ---- bagian daftar ---- */
 .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 2px 8px; }
@@ -230,35 +242,47 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
   display: flex; align-items: center; justify-content: center;
 }
 .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin: 0 1px; }
-.kosong { font-size: 13px; color: var(--muted2); margin: 0; padding: 18px 16px; text-align: center; }
+.kosong { font-size: 13px; color: var(--muted2); margin: 0; padding: 22px 16px; text-align: center; }
 
-/* ================= DESKTOP =================
-   Status membentang penuh; tiga daftar sederajat berjajar di bawahnya. */
+/* ================= DESKTOP ================= */
 @media (min-width: 920px) {
   .screen {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 22px 20px;
+    gap: 20px;
     padding: 4px 4px 28px;
-    align-items: start;
   }
-  /* Baris ditulis eksplisit supaya penempatannya pasti. */
+  /* Baris ditulis eksplisit supaya penempatannya pasti — properti `order` dan
+     penempatan otomatis pernah melempar satu kartu ke baris sendiri. */
   .b-head   { grid-column: 1 / -1; grid-row: 1; }
-  .b-status { grid-column: 1 / -1; grid-row: 2; }
+  .b-status { grid-column: 1 / 3;  grid-row: 2; }   /* dua kolom */
+  .b-angka  { grid-column: 3;      grid-row: 2; }   /* kartu terpisah, ada jarak */
   .b-recent { grid-column: 1; grid-row: 3; }
   .b-low    { grid-column: 2; grid-row: 3; }
   .b-sched  { grid-column: 3; grid-row: 3; }
 
-  .head-id, .avatar { display: none; }
-  .page-title { display: block; margin: 0; font-size: 23px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+  /* Kartu status dan kartu ringkasan disejajarkan tingginya — keduanya sebaris
+     dan perbedaan tinggi di situ terlihat seperti kesalahan.
+     Ketiga daftar di bawahnya TIDAK dipaksa sama tinggi: isinya berbeda-beda
+     panjang, dan menyamakannya hanya menambah ruang putih kosong di dalam kartu
+     yang isinya sedikit. */
+  .screen { align-items: start; }
+  .b-status, .b-angka { align-self: stretch; display: flex; flex-direction: column; }
+  .status, .ringkas { flex: 1; }
 
-  /* status: keterangan kiri, angka kanan — masih satu kartu */
-  .status { display: grid; grid-template-columns: minmax(0, 1fr) 300px; }
-  .s-main { padding: 20px 22px; }
+  .head { align-items: flex-end; margin-bottom: 2px; }
+  .head-id, .avatar { display: none; }
+  .head-desk { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; width: 100%; }
+  .page-title { margin: 0; font-size: 23px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+  .page-date { margin: 0; font-size: 13px; color: var(--muted); }
+
+  .status { padding: 20px 22px; }
   .s-title { font-size: 19px; }
-  .s-angka { flex-direction: column; border-top: none; border-left: 1px solid var(--hair); }
-  .ang { flex: 1; justify-content: center; padding: 16px 22px; }
-  .ang + .ang { border-left: none; border-top: 1px solid var(--hair); }
-  .ang-num { font-size: 25px; }
+  .ringkas { padding: 16px 20px 10px; }
+  /* Kedua baris berbagi tinggi kartu. Tanpa ini, saat status sedang panjang
+     (bidan tidak di klinik) kartu ini ikut memanjang dan menyisakan ruang
+     kosong menganggur di bawahnya. */
+  .rk-row { flex: 1; padding: 14px 0; }
+  .rk-num { font-size: 24px; min-width: 34px; }
 }
 </style>
