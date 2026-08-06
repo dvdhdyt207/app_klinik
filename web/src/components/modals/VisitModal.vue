@@ -42,7 +42,7 @@ function remove(i) { k.draft.items.splice(i, 1) }
             <div class="it-unit">{{ it.unit }}</div>
           </div>
           <Stepper :value="it.qty" @dec="dec(it)" @inc="inc(it)" />
-          <button class="rm" @click="remove(i)">×</button>
+          <button class="rm" :aria-label="'Hapus ' + it.name" @click="remove(i)">×</button>
         </div>
       </div>
       <div v-else class="dashed">Belum ada obat. Ketuk "Tambah obat".</div>
@@ -61,12 +61,17 @@ function remove(i) { k.draft.items.splice(i, 1) }
 .suffix { font-size: 14px; color: var(--muted); font-weight: 600; }
 .area { min-height: 84px; resize: none; }
 .obat-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.link { font-size: 12.5px; font-weight: 700; color: var(--accent); }
-.list { display: flex; flex-direction: column; gap: 9px; }
-.item { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 11px 12px; }
+.link { font-size: 12.5px; font-weight: 600; color: var(--accent); min-height: 32px; }
+.link:hover { color: var(--accent-hover); }
+/* Satu permukaan, baris dipisah garis rambut — bukan tiap obat jadi kartu
+   ber-border sendiri di dalam kartu modal. */
+.list { background: var(--card); border: 1px solid var(--line); border-radius: var(--ra-lg); }
+.item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.item + .item { border-top: 1px solid var(--hair); }
 .grow { flex: 1; min-width: 0; }
 .it-name { font-size: 14px; font-weight: 600; color: var(--ink); }
 .it-unit { font-size: 11.5px; color: var(--muted); }
-.rm { width: 30px; height: 30px; color: var(--disabled); font-size: 17px; }
-.footer { padding: 16px; background: #fff; border-top: 1px solid var(--border); }
+.rm { width: 32px; height: 32px; border-radius: var(--ra-sm); color: var(--muted2); font-size: 17px; }
+.rm:hover { background: var(--danger-bg); color: var(--danger); }
+.footer { padding: 14px 16px; background: #fff; border-top: 1px solid var(--hair); }
 </style>

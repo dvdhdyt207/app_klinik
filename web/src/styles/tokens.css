@@ -91,27 +91,28 @@ a { color: var(--accent); text-decoration: none; }
 /* ---------- primitive dipakai ulang ---------- */
 .card {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  border-radius: var(--ra-lg);
   padding: 14px;
 }
 .field {
   width: 100%;
   border: 1px solid var(--input-border);
-  border-radius: 12px;
-  padding: 14px;
-  font-size: 15px;
+  border-radius: var(--ra-md);
+  padding: 12px;
+  font-size: 14.5px;
   color: var(--ink);
-  background: #fff;
+  background: var(--fill2);
   outline: none;
+  transition: border-color .15s ease, background .15s ease;
 }
-.field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.field:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px var(--accent-soft); }
 .field::placeholder { color: var(--muted2); }
-.label { font-size: 12.5px; font-weight: 700; color: var(--label); }
+.label { font-size: 12px; font-weight: 600; color: var(--label); }
 .btn {
   display: flex; align-items: center; justify-content: center; gap: 9px;
-  width: 100%; border-radius: var(--r-md); padding: 15px;
-  font-size: 15px; font-weight: 700; text-align: center; color: #fff;
+  width: 100%; border-radius: var(--ra-md); min-height: 44px; padding: 0 16px;
+  font-size: 14.5px; font-weight: 600; text-align: center; color: #fff;
   background: var(--accent);
   transition: background .15s ease;
 }
@@ -119,8 +120,8 @@ a { color: var(--accent); text-decoration: none; }
 .btn:active:not(:disabled):not(.is-disabled) { background: var(--accent-press); }
 .btn:disabled, .btn.is-disabled { background: var(--disabled); cursor: default; }
 .dashed {
-  border: 1.5px dashed var(--border2); border-radius: var(--r-md);
-  padding: 18px; text-align: center; color: var(--muted2); font-size: 13px;
+  border: 1px dashed var(--line); border-radius: var(--ra-lg);
+  padding: 20px; text-align: center; color: var(--muted2); font-size: 13px;
 }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
@@ -166,8 +167,8 @@ a { color: var(--accent); text-decoration: none; }
   .fullmodal {
     position: fixed; inset: auto;
     top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: min(580px, 92vw); max-height: 86vh;
-    border-radius: var(--r-lg); overflow: hidden; z-index: 50;
+    width: min(560px, 92vw); max-height: 86vh;
+    border-radius: var(--ra-lg); overflow: hidden; z-index: 50;
     /* Lapisan gelapnya elemen tersendiri di BidanApp.vue, bukan spread
        box-shadow raksasa seperti dulu. */
     box-shadow: 0 24px 60px rgba(20,33,28,.35);

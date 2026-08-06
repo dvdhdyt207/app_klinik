@@ -7,54 +7,69 @@ const d = computed(() => k.derived)
 
 <template>
   <div class="screen">
-    <div class="top">
-      <h1 class="title">Kunjungan</h1>
-      <button class="fab" @click="k.openVisit()">+</button>
-    </div>
-    <div class="subtitle">{{ d.totalVisits }} total · {{ d.todayCount }} hari ini</div>
+    <!-- Tombol "+" mengambang dilepas: mencatat kunjungan kini ada di navigasi,
+         jadi tombol kedua di layar ini cuma mengulang tindakan yang sama. -->
+    <header class="page-head">
+      <h1 class="page-title">Kunjungan</h1>
+      <p class="page-sub">{{ d.totalVisits }} tercatat · {{ d.todayCount }} hari ini</p>
+    </header>
 
-    <div class="list">
-      <div v-for="v in d.visitCards" :key="v.id" class="vcard">
-        <div class="vhead">
-          <div class="vavatar">{{ v.initial }}</div>
+    <div v-if="d.visitCards.length" class="kartu">
+      <ul class="rows">
+        <li v-for="v in d.visitCards" :key="v.id" class="row">
+          <span class="ava" aria-hidden="true">{{ v.initial }}</span>
           <div class="grow">
-            <div class="vname">{{ v.name }}</div>
-            <div class="vmeta">{{ v.meta }}</div>
+            <p class="r-name">
+              {{ v.name }}<span class="r-age">{{ v.meta }}</span>
+            </p>
+            <p v-if="v.gejala" class="r-sub">{{ v.gejala }}</p>
+            <!-- Obat ditulis sebagai satu baris teks, bukan deretan chip:
+                 chip menambah kotak di dalam kotak, dan yang dicari bidan saat
+                 memindai daftar ini adalah namanya, bukan bentuknya. -->
+            <p v-if="v.chips.length" class="r-obat">{{ v.chips.join(' · ') }}</p>
           </div>
-          <div class="vdate">{{ v.dateLabel }}</div>
-        </div>
-        <div v-if="v.gejala" class="vgejala"><span class="glabel">Gejala: </span>{{ v.gejala }}</div>
-        <div v-if="v.chips.length" class="vchips">
-          <span v-for="(c, i) in v.chips" :key="i" class="vchip">{{ c }}</span>
-        </div>
-      </div>
+          <span class="r-side">{{ v.dateLabel }}</span>
+        </li>
+      </ul>
+    </div>
+    <div v-else class="kartu">
+      <p class="kosong">Belum ada kunjungan tercatat. Ketuk <b>Catat Kunjungan</b> untuk memulai.</p>
     </div>
   </div>
 </template>
 
 <style scoped>
-.screen { padding: 20px 18px 24px; }
-.top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); }
-.fab { width: 40px; height: 40px; border-radius: 20px; background: var(--accent); color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(18,128,106,.3); }
-.fab:hover { background: var(--accent-hover); }
-.subtitle { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
-.list { display: flex; flex-direction: column; gap: 10px; }
-.vcard { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 15px; }
-.vhead { display: flex; align-items: center; gap: 12px; }
-.vavatar { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; background: var(--accent-soft); color: var(--accent-ink); font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+.screen { padding: 16px 16px 24px; }
+.page-head { margin-bottom: 14px; }
+.page-title { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+.page-sub { margin: 3px 0 0; font-size: 13px; color: var(--muted); }
+
+.kartu { background: var(--card); border: 1px solid var(--line); border-radius: var(--ra-lg); }
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px; }
+.row + .row { border-top: 1px solid var(--hair); }
 .grow { flex: 1; min-width: 0; }
-.vname { font-size: 15px; font-weight: 700; color: var(--ink); }
-.vmeta { font-size: 12.5px; color: var(--muted); }
-.vdate { font-size: 11.5px; color: var(--muted); font-weight: 600; }
-.vgejala { margin-top: 9px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; }
-.glabel { color: var(--muted2); font-weight: 700; }
-.vchips { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 6px; }
-.vchip { background: var(--fill); border-radius: 8px; padding: 5px 9px; font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+
+.ava {
+  width: 32px; height: 32px; border-radius: var(--ra-md); flex-shrink: 0; margin-top: 1px;
+  background: var(--fill); color: var(--text-secondary);
+  font-size: 12.5px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.r-name { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+.r-age { font-size: 12.5px; font-weight: 500; color: var(--muted); margin-left: 8px; }
+.r-sub { margin: 2px 0 0; font-size: 13px; color: var(--text-secondary); line-height: 1.45; }
+.r-obat { margin: 4px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.r-side { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; margin-top: 2px; }
+.kosong { margin: 0; padding: 26px 18px; text-align: center; font-size: 13.5px; color: var(--muted2); }
+.kosong b { color: var(--text-secondary); font-weight: 700; }
 
 @media (min-width: 920px) {
-  .screen { padding: 8px 4px 24px; }
-  .title { font-size: 26px; }
-  .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; align-items: start; }
+  .screen { padding: 4px 4px 28px; }
+  .page-head { margin-bottom: 16px; }
+  .page-title { font-size: 23px; }
+  /* Daftar rekam medis dibaca dengan memindai ke bawah, jadi ia tetap satu
+     kolom penuh — bukan kisi kartu yang memaksa mata melompat kiri-kanan. */
+  .row { padding: 14px 20px; gap: 14px; }
 }
 </style>

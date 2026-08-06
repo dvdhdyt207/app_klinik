@@ -103,10 +103,10 @@ async function keluar() {
 
 <template>
   <div class="screen">
-    <div class="head">
-      <div class="eyebrow">SETELAN</div>
-      <div class="judul">{{ profil.clinic || 'Klinik' }}</div>
-    </div>
+    <header class="head">
+      <h1 class="judul">Setelan</h1>
+      <p class="sub">{{ profil.clinic || 'Klinik' }}</p>
+    </header>
 
     <form class="kartu" @submit.prevent="simpanProfil">
       <div class="k-judul">Profil klinik</div>
@@ -170,48 +170,50 @@ async function keluar() {
 </template>
 
 <style scoped>
-.screen { padding: 20px 18px 24px; display: flex; flex-direction: column; gap: 16px; }
-.head { padding: 2px; }
-.eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: 1.3px; color: var(--muted); }
-.judul { font-size: 21px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+.screen { padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 16px; }
+.head { padding: 0 2px; }
+.judul { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+.sub { margin: 3px 0 0; font-size: 13px; color: var(--muted); }
 
 .kartu {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 18px 16px;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--ra-lg); padding: 18px;
   display: flex; flex-direction: column;
 }
-.k-judul { font-size: 15px; font-weight: 800; color: var(--ink); }
-.k-akun { font-size: 12px; font-weight: 600; color: var(--muted); }
-.area { resize: vertical; min-height: 72px; line-height: 1.45; }
-.k-sub { font-size: 12.5px; color: var(--text-secondary); margin: 4px 0 16px; line-height: 1.45; }
+.k-judul { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.k-akun { font-size: 12px; font-weight: 500; color: var(--muted); }
+.area { resize: vertical; min-height: 76px; line-height: 1.5; }
+.k-sub { font-size: 12.5px; color: var(--muted); margin: 5px 0 16px; line-height: 1.5; }
 
-.label { font-size: 12px; font-weight: 700; color: var(--label); margin-bottom: 6px; }
+.label { font-size: 12px; font-weight: 600; color: var(--label); margin-bottom: 6px; }
 .kolom {
-  border: 1px solid var(--input-border); border-radius: 10px;
-  padding: 11px 12px; font: inherit; font-size: 15px; color: var(--ink);
+  border: 1px solid var(--input-border); border-radius: var(--ra-md);
+  padding: 11px 12px; font: inherit; font-size: 14.5px; color: var(--ink);
   background: var(--fill2); margin-bottom: 14px; width: 100%;
+  transition: border-color .15s ease, background .15s ease;
 }
-.kolom:focus { outline: 2px solid var(--accent); outline-offset: 1px; background: var(--card); }
+.kolom:focus { outline: none; border-color: var(--accent); background: var(--card); box-shadow: 0 0 0 3px var(--accent-soft); }
 
-.petunjuk { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+.petunjuk { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; line-height: 1.5; }
 .galat {
   background: var(--danger-bg); color: var(--danger);
-  font-size: 13px; font-weight: 600; border-radius: 10px;
-  padding: 9px 11px; margin: 0 0 12px;
+  font-size: 13px; font-weight: 600; border-radius: var(--ra-md);
+  padding: 10px 12px; margin: 0 0 12px;
 }
 /* Sama dengan Login.vue: pesan server diawali huruf kecil, dibesarkan lewat
    tampilan supaya teks aslinya tetap utuh. */
 .galat::first-letter { text-transform: uppercase; }
 .berhasil {
   background: var(--accent-soft); color: var(--accent-ink);
-  font-size: 13px; font-weight: 600; border-radius: 10px;
-  padding: 9px 11px; margin: 0 0 12px;
+  font-size: 13px; font-weight: 600; border-radius: var(--ra-md);
+  padding: 10px 12px; margin: 0 0 12px;
 }
 
 .tombol {
   background: var(--accent); color: #fff; border: 0;
-  border-radius: 10px; padding: 12px; font: inherit; font-size: 15px; font-weight: 700;
-  cursor: pointer;
+  border-radius: var(--ra-md); min-height: 40px; padding: 0 14px;
+  font: inherit; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background .15s ease;
 }
 .tombol:hover:not(:disabled) { background: var(--accent-hover); }
 .tombol:disabled { background: var(--disabled); cursor: default; }
@@ -231,6 +233,6 @@ async function keluar() {
     align-items: start;
   }
   .head { grid-column: 1 / -1; }
-  .judul { font-size: 26px; }
+  .judul { font-size: 23px; }
 }
 </style>

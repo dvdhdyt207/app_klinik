@@ -15,13 +15,15 @@ defineEmits(['back'])
 <style scoped>
 .mh {
   display: flex; align-items: center; gap: 12px;
-  padding: 16px 16px 12px; background: #fff;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 16px; background: #fff;
+  border-bottom: 1px solid var(--hair);
 }
 .back {
-  width: 36px; height: 36px; border-radius: 18px; background: var(--fill);
+  width: 32px; height: 32px; border-radius: var(--ra-md); background: var(--fill);
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: var(--text-secondary); line-height: 1; padding-bottom: 2px;
+  font-size: 19px; color: var(--text-secondary); line-height: 1; padding-bottom: 2px;
+  transition: background .15s ease;
 }
-.title { flex: 1; font-size: 17px; font-weight: 800; color: var(--ink); }
+.back:hover { background: var(--accent-soft); color: var(--accent-ink); }
+.title { flex: 1; font-size: 15px; font-weight: 700; letter-spacing: -.01em; color: var(--ink); }
 </style>

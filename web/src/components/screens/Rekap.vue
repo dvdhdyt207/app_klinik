@@ -8,94 +8,104 @@ const isK = computed(() => k.rekapTab === 'kunjungan')
 
 <template>
   <div class="screen">
-    <h1 class="title">Rekap</h1>
-    <div class="seg">
-      <button :class="['seg-btn', { active: isK }]" @click="k.rekapTab = 'kunjungan'">Kunjungan</button>
-      <button :class="['seg-btn', { active: !isK }]" @click="k.rekapTab = 'stok'">Stok Menipis</button>
-    </div>
+    <header class="page-head">
+      <h1 class="page-title">Rekap</h1>
+      <!-- Tab bergaris bawah, bukan tombol pil di dalam kotak abu: satu kotak
+           lebih sedikit, dan yang aktif tetap terbaca jelas. -->
+      <div class="tabs" role="tablist">
+        <button class="tb" :class="{ on: isK }" role="tab" :aria-selected="isK" @click="k.rekapTab = 'kunjungan'">Kunjungan</button>
+        <button class="tb" :class="{ on: !isK }" role="tab" :aria-selected="!isK" @click="k.rekapTab = 'stok'">Stok menipis</button>
+      </div>
+    </header>
 
     <template v-if="isK">
-      <div class="stat-row">
-        <!-- Penekanan mengikuti arti: jumlah kunjungan itu angka pokok layar
-             ini, obat yang keluar adalah turunannya. -->
-        <div class="big-card solid">
-          <div class="big-num">{{ d.totalVisits }}</div>
-          <div class="big-lbl">Total kunjungan</div>
+      <div class="kartu angka">
+        <div class="ang">
+          <span class="ang-num">{{ d.totalVisits }}</span>
+          <span class="ang-lbl">Total kunjungan</span>
         </div>
-        <div class="big-card soft">
-          <div class="big-num">{{ d.totalMedsOut }}</div>
-          <div class="big-lbl">Obat dikeluarkan</div>
+        <div class="ang">
+          <span class="ang-num">{{ d.totalMedsOut }}</span>
+          <span class="ang-lbl">Obat dikeluarkan</span>
         </div>
       </div>
-      <div class="recap-head">Ringkasan per hari</div>
-      <div class="list">
-        <div v-for="(row, i) in d.dailyRecap" :key="i" class="rline">
-          <div class="grow">
-            <div class="rlabel">{{ row.label }}</div>
-            <div class="rnames">{{ row.patients }}</div>
-          </div>
-          <div class="rcount">{{ row.count }}</div>
-        </div>
+
+      <p class="sec-title">Ringkasan per hari</p>
+      <div class="kartu">
+        <ul v-if="d.dailyRecap.length" class="rows">
+          <li v-for="(row, i) in d.dailyRecap" :key="i" class="row">
+            <div class="grow">
+              <p class="r-name">{{ row.label }}</p>
+              <p class="r-sub">{{ row.patients }}</p>
+            </div>
+            <span class="r-count">{{ row.count }}</span>
+          </li>
+        </ul>
+        <p v-else class="kosong">Belum ada kunjungan untuk diringkas</p>
       </div>
     </template>
 
     <template v-else>
-      <div class="subtitle">{{ d.lowCount }} obat perlu segera dibeli · urut dari terkecil</div>
-      <div class="list">
-        <div v-for="m in d.low" :key="m.id" class="lowline">
-          <div class="qtybox" :style="{ background: m.tint }">
-            <div class="qb-num" :style="{ color: m.color }">{{ m.qty }}</div>
-            <div class="qb-unit" :style="{ color: m.color }">{{ m.unit }}</div>
-          </div>
-          <div class="grow">
-            <div class="low-name">{{ m.name }}</div>
-            <div class="low-sub">{{ m.cat }} · {{ m.status }}</div>
-          </div>
-        </div>
+      <p class="sec-title">{{ d.lowCount }} obat perlu diperhatikan · urut dari terkecil</p>
+      <div class="kartu">
+        <ul v-if="d.low.length" class="rows">
+          <li v-for="m in d.low" :key="m.id" class="row">
+            <span class="dot" :style="{ background: m.color }" aria-hidden="true" />
+            <div class="grow">
+              <p class="r-name">{{ m.name }}</p>
+              <p class="r-sub">{{ m.cat }} · {{ m.status }}</p>
+            </div>
+            <span class="r-qty" :style="{ color: m.color }">{{ m.qty }}<i class="r-unit">{{ m.unit }}</i></span>
+          </li>
+        </ul>
+        <p v-else class="kosong">Semua stok aman</p>
       </div>
     </template>
   </div>
 </template>
 
 <style scoped>
-.screen { padding: 20px 18px 24px; }
-.title { margin: 0 0 16px; font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); }
-.seg { display: flex; background: var(--fill); border-radius: 14px; padding: 4px; margin-bottom: 18px; }
-.seg-btn { flex: 1; text-align: center; padding: 9px 0; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); }
-.seg-btn.active { background: #fff; color: var(--ink); box-shadow: var(--shadow-sm); }
+.screen { padding: 16px 16px 24px; }
+.page-head { margin-bottom: 16px; }
+.page-title { margin: 0 0 12px; font-size: 20px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
 
-.stat-row { display: flex; gap: 10px; margin-bottom: 14px; }
-.big-card { flex: 1; border-radius: var(--r-md); padding: 15px; }
-/* Dulu kartu kiri hitam pekat dan kanan biru — dua warna yang tidak punya arti
-   apa pun, cuma supaya berbeda. Sekarang keduanya teal, bedanya tingkat
-   penekanan: yang berisi angka utama lebih pekat. */
-.big-card.soft { background: var(--accent-soft); color: var(--accent-ink); }
-.big-card.solid { background: var(--accent); color: #fff; }
-.big-num { font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
-.big-lbl { font-size: 11.5px; opacity: .85; font-weight: 600; }
-.recap-head { font-size: 14px; font-weight: 700; color: var(--ink); margin: 8px 2px; }
+.tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--line); }
+.tb {
+  padding: 0 0 9px; font-size: 13.5px; font-weight: 600; color: var(--muted);
+  border-bottom: 2px solid transparent; margin-bottom: -1px; min-height: 34px;
+}
+.tb:hover { color: var(--text-secondary); }
+.tb.on { color: var(--accent-ink); border-bottom-color: var(--accent); }
 
-.list { display: flex; flex-direction: column; gap: 9px; }
-.rline { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 13px 15px; }
+.kartu { background: var(--card); border: 1px solid var(--line); border-radius: var(--ra-lg); }
+.angka { display: flex; margin-bottom: 22px; }
+.ang { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; }
+.ang + .ang { border-left: 1px solid var(--hair); }
+.ang-num { font-size: 23px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); line-height: 1.15; }
+.ang-lbl { font-size: 12px; color: var(--muted); }
+
+.sec-title {
+  margin: 0 2px 8px; font-size: var(--micro); font-weight: 700;
+  letter-spacing: .09em; text-transform: uppercase; color: var(--muted);
+}
+
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+.row + .row { border-top: 1px solid var(--hair); }
 .grow { flex: 1; min-width: 0; }
-.rlabel { font-size: 14px; font-weight: 700; color: var(--ink); }
-.rnames { font-size: 12px; color: var(--muted); }
-.rcount { font-size: 18px; font-weight: 800; color: var(--accent); }
-
-.subtitle { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
-.lowline { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 13px 15px; }
-.qtybox { min-width: 52px; height: 52px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.qb-num { font-size: 20px; font-weight: 800; line-height: 1; }
-.qb-unit { font-size: 10px; font-weight: 600; }
-.low-name { font-size: 14.5px; font-weight: 700; color: var(--ink); }
-.low-sub { font-size: 12px; color: var(--muted); }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin: 0 1px; }
+.r-name { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+.r-sub { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
+.r-count { font-size: 15px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.r-qty { font-size: 15px; font-weight: 700; white-space: nowrap; }
+.r-unit { font-style: normal; font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 5px; }
+.kosong { margin: 0; padding: 26px 18px; text-align: center; font-size: 13.5px; color: var(--muted2); }
 
 @media (min-width: 920px) {
-  .screen { padding: 8px 4px 24px; }
-  .title { font-size: 26px; }
-  /* Pemilih tab dan kartu angka tidak ikut melebar sampai ujung layar —
-     tombol selebar 500px tidak lebih mudah ditekan, hanya lebih aneh. */
-  .seg, .stat-row { max-width: 620px; }
-  .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; align-items: start; }
+  .screen { padding: 4px 4px 28px; max-width: 900px; }
+  .page-title { font-size: 23px; }
+  .row { padding: 13px 20px; }
+  .ang { padding: 16px 22px; }
+  .ang-num { font-size: 26px; }
 }
 </style>
