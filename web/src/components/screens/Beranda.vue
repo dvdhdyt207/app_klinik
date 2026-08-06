@@ -16,245 +16,249 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
 
 <template>
   <div class="screen">
-    <!-- header -->
-    <!-- Di HP, sidebar tidak ada, jadi identitas klinik muncul di sini.
-         Di desktop sidebar sudah menampilkannya — mengulanginya membuat nama
-         klinik tertulis dua kali bersebelahan di layar yang sama. -->
-    <div class="b-head">
+    <header class="b-head">
       <div class="head">
-        <div class="head-id">
-          <div class="clinic">{{ namaKlinik }}</div>
-        </div>
+        <div class="head-id"><p class="clinic">{{ namaKlinik }}</p></div>
         <h1 class="page-title">Beranda</h1>
         <button class="avatar" type="button" title="Setelan" @click="k.goScreen('akun')">{{ inisial }}</button>
       </div>
-    </div>
+    </header>
 
-    <!-- ===== kolom kiri (desktop) ===== -->
-    <div class="col col-a">
-      <!-- status + link web -->
-      <div class="b-status">
-        <button v-if="!away" class="hero-present" @click="k.openAway()">
-          <div class="row-between">
-            <span class="hp-label">Status Bidan</span>
-            <Toggle :on="true" trackOn="rgba(255,255,255,.32)" />
-          </div>
-          <div class="hp-title">Sedang di klinik</div>
-          <div class="hp-sub">Ketuk untuk atur status keluar</div>
-        </button>
-
-        <div v-else class="hero-away">
-          <div class="row-between">
-            <span class="ha-label">Status Bidan</span>
-            <Toggle :on="false" @click="k.setHadir()" style="cursor:pointer" />
-          </div>
-          <div class="ha-title">Tidak di klinik</div>
-          <div v-if="st.awayNote" class="ha-note">{{ st.awayNote }}</div>
-
-          <div v-if="st.awayUntil" class="ha-pill">
-            <span class="pill-strong">Perkiraan kembali {{ hhmm(st.awayUntil) }}</span>
-            <span class="pill-muted">{{ untilText }}</span>
-          </div>
-          <div v-else class="ha-pill">
-            <span class="pill-muted">Waktu kembali belum dipastikan</span>
+    <!-- ===== status + dua angka: SATU permukaan, bukan dua kartu ===== -->
+    <section class="b-status">
+      <div class="kartu status" :class="away ? 'is-away' : 'is-here'">
+        <div class="s-main">
+          <!-- Titik warna + judul, tanpa label kapital di atasnya: keduanya dulu
+               mengatakan hal yang persis sama, bertumpuk. -->
+          <div class="s-row">
+            <p class="s-title">
+              <span class="s-dot" aria-hidden="true" />{{ away ? 'Tidak di klinik' : 'Sedang di klinik' }}
+            </p>
+            <button v-if="!away" class="s-toggle" aria-label="Atur status keluar" @click="k.openAway()">
+              <Toggle :on="true" variant="small" />
+            </button>
+            <button v-else class="s-toggle" aria-label="Tandai sudah kembali" @click="k.setHadir()">
+              <Toggle :on="false" variant="small" />
+            </button>
           </div>
 
-          <div class="ha-actions">
-            <button class="chip" @click="k.extend(15)">+15 mnt</button>
-            <button class="chip" @click="k.extend(30)">+30 mnt</button>
-            <button class="chip" @click="k.openAway()">Ubah</button>
-          </div>
-          <button class="back-btn" @click="k.setHadir()">Saya sudah kembali</button>
-        </div>
-
-        <router-link to="/" class="weblink">
-          <span class="wl-left"><span class="dot" style="background:var(--healthy)" /> Status ini tampil di halaman web pasien</span>
-          <span class="chev">›</span>
-        </router-link>
-      </div>
-
-      <!-- quick stats -->
-      <div class="b-stats">
-        <div class="stats">
-          <div class="card stat">
-            <div class="stat-num">{{ d.todayCount }}</div>
-            <div class="stat-lbl">Kunjungan hari ini</div>
-          </div>
-          <div class="card stat">
-            <div class="stat-num danger">{{ d.lowCount }}</div>
-            <div class="stat-lbl">Obat menipis</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- kunjungan terakhir (khusus desktop, mengisi ruang) -->
-      <div class="b-recent">
-        <div class="section-head">
-          <span class="sh-title">Kunjungan terakhir</span>
-          <button class="sh-action" @click="k.goScreen('kunjungan')">Lihat semua</button>
-        </div>
-        <div v-if="d.visitCards.length" class="list">
-          <div v-for="v in d.visitCards.slice(0, 4)" :key="v.id" class="rvline">
-            <div class="rv-ava">{{ v.initial }}</div>
-            <div class="grow">
-              <div class="ln-name">{{ v.name }}</div>
-              <div class="ln-cat">{{ v.meta }}</div>
+          <template v-if="away">
+            <p v-if="st.awayNote" class="s-note">{{ st.awayNote }}</p>
+            <p class="s-meta">
+              <template v-if="st.awayUntil">Perkiraan kembali <b>{{ hhmm(st.awayUntil) }}</b> · {{ untilText }}</template>
+              <template v-else>Waktu kembali belum dipastikan</template>
+            </p>
+            <div class="s-actions">
+              <button class="btn-ghost" @click="k.extend(15)">+15 mnt</button>
+              <button class="btn-ghost" @click="k.extend(30)">+30 mnt</button>
+              <button class="btn-ghost" @click="k.openAway()">Ubah</button>
+              <button class="btn-solid" @click="k.setHadir()">Saya sudah kembali</button>
             </div>
-            <div class="rv-date">{{ v.dateLabel }}</div>
-          </div>
-        </div>
-        <div v-else class="dashed">Belum ada kunjungan</div>
-      </div>
+          </template>
+          <p v-else class="s-meta">Pasien melihat status ini terbuka. Ketuk sakelar untuk mengatur status keluar.</p>
 
-      <!-- catat kunjungan -->
-      <div class="b-visit">
-        <button class="visit-btn" @click="k.openVisit()">
-          <span style="font-size:20px">+</span> Catat Kunjungan
-        </button>
-      </div>
-    </div>
+          <router-link to="/" class="s-web">
+            Lihat halaman pasien
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg>
+          </router-link>
+        </div>
 
-    <!-- ===== kolom kanan (desktop) ===== -->
-    <div class="col col-b">
-      <!-- stok menipis -->
-      <div class="b-low">
-        <div class="section-head">
-          <span class="sh-title">Stok menipis</span>
-          <button class="sh-action" @click="k.goScreen('stok')">Lihat stok</button>
-        </div>
-        <div v-if="d.low.length" class="list">
-          <div v-for="m in d.low" :key="m.id" class="line">
-            <span class="dot" :style="{ background: m.color }" />
-            <div class="grow">
-              <div class="ln-name">{{ m.name }}</div>
-              <div class="ln-cat">{{ m.cat }}</div>
-            </div>
-            <div class="ln-qty" :style="{ color: m.color }">{{ m.qty }} <span class="ln-unit">{{ m.unit }}</span></div>
+        <!-- Dua angka duduk di dalam kartu status, dipisah garis rambut. Sebagai
+             kartu tersendiri mereka menambah satu kotak lagi ke layar tanpa
+             menambah arti apa pun. -->
+        <div class="s-angka">
+          <div class="ang">
+            <span class="ang-num">{{ d.todayCount }}</span>
+            <span class="ang-lbl">Kunjungan hari ini</span>
           </div>
+          <button class="ang is-link" @click="k.goScreen('stok')">
+            <span class="ang-num" :class="{ 'is-warn': d.lowCount > 0 }">{{ d.lowCount }}</span>
+            <span class="ang-lbl">Obat menipis</span>
+          </button>
         </div>
-        <div v-else class="dashed">Semua stok aman</div>
       </div>
+    </section>
 
-      <!-- jadwal & agenda -->
-      <div class="b-sched">
-        <div class="section-head">
-          <span class="sh-title">Jadwal & agenda</span>
-          <button class="sh-action" @click="k.openJadwal()">Kelola</button>
-        </div>
-        <div v-if="d.upcoming.length" class="list">
-          <div v-for="e in d.upcoming.slice(0, 4)" :key="e.id" class="line">
-            <span class="dot" :style="{ background: e.dot }" />
-            <div class="grow">
-              <div class="ln-name">{{ e.title }}</div>
-              <div class="ln-cat">{{ e.when }}</div>
-            </div>
-          </div>
-        </div>
-        <div v-else class="dashed">Belum ada agenda mendatang</div>
+    <!-- ===== tiga daftar sederajat ===== -->
+    <section class="b-recent">
+      <div class="sec-head">
+        <h2 class="sec-title">Kunjungan terakhir</h2>
+        <button class="sec-link" @click="k.goScreen('kunjungan')">Semua</button>
       </div>
-    </div>
+      <div class="kartu">
+        <ul v-if="d.visitCards.length" class="rows">
+          <li v-for="v in d.visitCards.slice(0, 5)" :key="v.id" class="row">
+            <span class="ava" aria-hidden="true">{{ v.initial }}</span>
+            <span class="grow">
+              <span class="r-name">{{ v.name }}</span>
+              <span class="r-sub">{{ v.meta }}</span>
+            </span>
+            <span class="r-side">{{ v.dateLabel }}</span>
+          </li>
+        </ul>
+        <p v-else class="kosong">Belum ada kunjungan tercatat</p>
+      </div>
+    </section>
+
+    <section class="b-low">
+      <div class="sec-head">
+        <h2 class="sec-title">Stok menipis</h2>
+        <button class="sec-link" @click="k.goScreen('stok')">Semua</button>
+      </div>
+      <div class="kartu">
+        <ul v-if="d.low.length" class="rows">
+          <li v-for="m in d.low" :key="m.id" class="row">
+            <span class="dot" :style="{ background: m.color }" aria-hidden="true" />
+            <span class="grow">
+              <span class="r-name">{{ m.name }}</span>
+              <span class="r-sub">{{ m.cat }} · {{ m.status }}</span>
+            </span>
+            <span class="r-side r-qty" :style="{ color: m.color }">{{ m.qty }}<i class="r-unit">{{ m.unit }}</i></span>
+          </li>
+        </ul>
+        <p v-else class="kosong">Semua stok aman</p>
+      </div>
+    </section>
+
+    <section class="b-sched">
+      <div class="sec-head">
+        <h2 class="sec-title">Jadwal &amp; agenda</h2>
+        <button class="sec-link" @click="k.openJadwal()">Kelola</button>
+      </div>
+      <div class="kartu">
+        <ul v-if="d.upcoming.length" class="rows">
+          <li v-for="e in d.upcoming.slice(0, 5)" :key="e.id" class="row">
+            <span class="dot" :style="{ background: e.dot }" aria-hidden="true" />
+            <span class="grow">
+              <span class="r-name">{{ e.title }}</span>
+              <span class="r-sub">{{ e.when }}</span>
+            </span>
+          </li>
+        </ul>
+        <p v-else class="kosong">Belum ada agenda mendatang</p>
+      </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
-/* ---------- MOBILE (default) — identik dgn sebelumnya ---------- */
-.screen { padding: 20px 18px 24px; display: flex; flex-direction: column; }
-.col { display: contents; }              /* promote anak jadi item flex .screen */
-.b-recent { display: none; }             /* hanya desktop */
-.b-head { order: 0; }
-.b-status { order: 1; }
-.b-stats { order: 2; }
-.b-low { order: 3; }
-.b-sched { order: 4; }
-.b-visit { order: 5; }
-.b-recent { order: 3; }
+/* ================= HP (bawaan) ================= */
+.screen { padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 22px; }
 
-.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .head-id { min-width: 0; }
 .page-title { display: none; }
-.clinic { font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); line-height: 1.2; overflow-wrap: anywhere; }
-/* font-size ikut disebut: reset global hanya mewariskan font-family, dan sejak
-   avatar jadi <button> ukuran hurufnya akan mengecil ke bawaan tombol. */
-.avatar { width: 42px; height: 42px; border-radius: 21px; flex-shrink: 0; background: var(--accent-soft); color: var(--accent-ink); font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.clinic { font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); margin: 0; line-height: 1.25; overflow-wrap: anywhere; }
+.avatar {
+  width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0;
+  background: var(--fill); color: var(--text-secondary);
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar:hover { background: var(--accent-soft); color: var(--accent-ink); }
 
-.row-between { display: flex; align-items: center; justify-content: space-between; }
-.hero-present { display: block; width: 100%; text-align: left; background: linear-gradient(160deg, var(--accent) 0%, var(--accent-press) 100%); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow-accent); }
-.hp-label { font-size: 12.5px; font-weight: 600; color: #fff; opacity: .85; }
-.hp-title { font-size: 20px; font-weight: 800; color: #fff; margin-top: 14px; }
-.hp-sub { font-size: 12.5px; color: #fff; opacity: .8; margin-top: 3px; }
+/* ---- permukaan dasar: satu kartu per bagian ---- */
+.kartu { background: var(--card); border: 1px solid var(--line); border-radius: var(--ra-lg); }
 
-/* Sama dengan halaman pasien: "tidak ada" punya warnanya sendiri (amber),
-   bukan kartu putih yang harus dibaca dulu untuk tahu keadaannya. */
-.hero-away { background: var(--away-soft); border: 1px solid var(--away-line); border-radius: var(--r-lg); padding: 20px; }
-.ha-label { font-size: 12.5px; font-weight: 600; color: var(--away-ink); }
-.ha-title { font-size: 20px; font-weight: 800; color: var(--ink); margin-top: 14px; }
-.ha-note { font-size: 13px; color: var(--text-secondary); margin-top: 5px; font-weight: 600; }
-.ha-pill { margin-top: 12px; background: var(--card); border: 1px solid var(--away-line); border-radius: 12px; padding: 11px 13px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
-.pill-strong { font-size: 13px; color: var(--ink); font-weight: 700; }
-.pill-muted { font-size: 12.5px; color: var(--muted); font-weight: 600; }
-.ha-actions { display: flex; gap: 8px; margin-top: 12px; }
-.chip { flex: 1; text-align: center; padding: 9px 0; border-radius: 10px; background: var(--card); border: 1px solid var(--away-line); color: var(--away-ink); font-size: 12.5px; font-weight: 700; }
-.back-btn { width: 100%; margin-top: 10px; padding: 13px; border-radius: 12px; background: var(--accent); color: #fff; font-size: 14px; font-weight: 700; }
-.back-btn:hover { background: var(--accent-hover); }
+/* ---- status ---- */
+.status { overflow: hidden; }
+.s-main { padding: 16px 18px 14px; }
+.s-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.s-title {
+  display: inline-flex; align-items: center; gap: 9px; margin: 0;
+  font-size: 18px; font-weight: 700; letter-spacing: -.015em; color: var(--ink); line-height: 1.35;
+}
+.s-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.is-here .s-dot { background: var(--accent); }
+.is-away .s-dot { background: var(--away); }
+.s-toggle { display: flex; align-items: center; min-height: 40px; }
 
-.weblink { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; background: var(--accent-soft); border: 1px solid var(--border2); border-radius: var(--r-md); padding: 11px 14px; }
-.wl-left { display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 600; color: var(--accent-ink); }
-.chev { font-size: 18px; color: var(--accent-ink); }
+.s-note { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin: 10px 0 0; line-height: 1.5; }
+.s-meta { font-size: 13px; color: var(--muted); margin: 6px 0 0; line-height: 1.5; }
+.s-meta b { color: var(--ink); font-weight: 700; }
 
-.stats { display: flex; gap: 10px; margin-top: 14px; }
-.stat { flex: 1; }
-.stat-num { font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); }
-.stat-num.danger { color: var(--danger); }
-.stat-lbl { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.s-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.btn-ghost {
+  min-height: 38px; padding: 0 14px; border-radius: var(--ra-md);
+  background: var(--fill); color: var(--text-secondary);
+  font-size: 13px; font-weight: 600;
+}
+.btn-ghost:hover { background: var(--fill); color: var(--ink); }
+.btn-solid {
+  flex: 1; min-width: 150px; min-height: 38px; padding: 0 16px; border-radius: var(--ra-md);
+  background: var(--accent); color: #fff; font-size: 13px; font-weight: 600;
+}
+.btn-solid:hover { background: var(--accent-hover); }
 
-.section-head { display: flex; align-items: center; justify-content: space-between; margin: 24px 2px 12px; }
-.sh-title { font-size: 15px; font-weight: 700; color: var(--ink); }
-.sh-action { font-size: 12.5px; font-weight: 600; color: var(--accent); }
+.s-web {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 14px;
+  font-size: 12.5px; font-weight: 600; color: var(--muted);
+}
+.s-web:hover { color: var(--accent); }
 
-.list { display: flex; flex-direction: column; gap: 9px; }
-.line { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
-.grow { flex: 1; min-width: 0; }
-.ln-name { font-size: 14px; font-weight: 600; color: var(--ink); }
-.ln-cat { font-size: 12px; color: var(--muted); }
-.ln-qty { font-size: 15px; font-weight: 800; }
-.ln-unit { font-size: 11px; font-weight: 600; color: var(--muted); }
+/* dua angka: dipisah garis rambut, bukan kartu terpisah */
+.s-angka { display: flex; border-top: 1px solid var(--hair); }
+.ang { flex: 1; display: flex; flex-direction: column; gap: 1px; padding: 12px 18px; text-align: left; }
+.ang + .ang { border-left: 1px solid var(--hair); }
+.ang.is-link:hover { background: var(--fill2); }
+.ang-num { font-size: 21px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); line-height: 1.15; }
+.ang-num.is-warn { color: var(--away); }
+.ang-lbl { font-size: 12px; color: var(--muted); }
 
-.rvline { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 10px 14px; }
-.rv-ava { width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-ink); font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.rv-date { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+/* ---- bagian daftar ---- */
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 2px 8px; }
+.sec-title {
+  margin: 0; font-size: var(--micro); font-weight: 700;
+  letter-spacing: .09em; text-transform: uppercase; color: var(--muted);
+}
+.sec-link { font-size: 12.5px; font-weight: 600; color: var(--muted); min-height: 30px; }
+.sec-link:hover { color: var(--accent); }
 
-/* Tindakan utama layar ini. Dulu hitam (var(--ink)) — netral gelap membuatnya
-   terbaca sebagai tombol asing, bukan sebagai tombol yang paling sering
-   ditekan bidan. */
-.visit-btn { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 22px; background: var(--accent); color: #fff; border-radius: var(--r-md); padding: 15px; font-size: 15px; font-weight: 700; box-shadow: var(--shadow-md); transition: background .15s ease; }
-.visit-btn:hover { background: var(--accent-hover); }
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: flex; align-items: center; gap: 12px; padding: 11px 16px; }
+.row + .row { border-top: 1px solid var(--hair); }
+.grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.r-name { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+.r-sub { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.r-side { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.r-qty { font-size: 14.5px; font-weight: 700; }
+.r-unit { font-style: normal; font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+.ava {
+  width: 30px; height: 30px; border-radius: var(--ra-md); flex-shrink: 0;
+  background: var(--fill); color: var(--text-secondary);
+  font-size: 12.5px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin: 0 1px; }
+.kosong { font-size: 13px; color: var(--muted2); margin: 0; padding: 18px 16px; text-align: center; }
 
-/* ---------- DESKTOP: 2 kolom independen (tanpa coupling tinggi) ---------- */
+/* ================= DESKTOP =================
+   Status membentang penuh; tiga daftar sederajat berjajar di bawahnya. */
 @media (min-width: 920px) {
   .screen {
     display: grid;
-    grid-template-columns: 1.05fr .95fr;
-    gap: 18px 26px;
-    padding: 6px 4px 28px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px 20px;
+    padding: 4px 4px 28px;
     align-items: start;
   }
-  .b-head { grid-column: 1 / -1; }
-  .col { display: flex; flex-direction: column; gap: 16px; }
-  .col-a { grid-column: 1; }
-  .col-b { grid-column: 2; }
-  .b-recent { display: block; }
+  /* Baris ditulis eksplisit supaya penempatannya pasti. */
+  .b-head   { grid-column: 1 / -1; grid-row: 1; }
+  .b-status { grid-column: 1 / -1; grid-row: 2; }
+  .b-recent { grid-column: 1; grid-row: 3; }
+  .b-low    { grid-column: 2; grid-row: 3; }
+  .b-sched  { grid-column: 3; grid-row: 3; }
 
-  /* identitas klinik sudah ada di sidebar — di sini cukup judul halaman */
   .head-id, .avatar { display: none; }
-  .page-title { display: block; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); }
+  .page-title { display: block; margin: 0; font-size: 23px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
 
-  /* jarak antar-kartu diatur oleh gap kolom, jadi reset margin lama */
-  .head { margin-bottom: 4px; }
-  .stats { margin-top: 0; }
-  .section-head { margin: 4px 2px 12px; }
-  .visit-btn { margin-top: 0; }
-
-  /* hero sedikit lebih lega di desktop */
-  .hero-present, .hero-away { padding: 22px 22px; }
+  /* status: keterangan kiri, angka kanan — masih satu kartu */
+  .status { display: grid; grid-template-columns: minmax(0, 1fr) 300px; }
+  .s-main { padding: 20px 22px; }
+  .s-title { font-size: 19px; }
+  .s-angka { flex-direction: column; border-top: none; border-left: 1px solid var(--hair); }
+  .ang { flex: 1; justify-content: center; padding: 16px 22px; }
+  .ang + .ang { border-left: none; border-top: 1px solid var(--hair); }
+  .ang-num { font-size: 25px; }
 }
 </style>

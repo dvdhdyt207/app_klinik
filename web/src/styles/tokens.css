@@ -45,6 +45,18 @@
   --shadow-md: 0 6px 18px rgba(20, 33, 28, .07);
   --shadow-lg: 0 20px 46px rgba(20, 33, 28, .10);
   --shadow-accent: 0 16px 38px rgba(18, 128, 106, .26);
+
+  /* --- Bidan App: bahasa visual datar ---
+     Aplikasi ini perkakas kerja yang dipandangi berjam-jam, bukan halaman yang
+     dikunjungi sekali. Karena itu ia memakai bentuk yang lebih tenang daripada
+     halaman pasien: radius kecil, tanpa gradien, tanpa bayangan berwarna, dan
+     baris daftar dipisah GARIS RAMBUT di dalam satu permukaan — bukan tiap
+     baris jadi kartu ber-border sendiri, yang membuat layar terlihat ramai
+     padahal isinya sedikit. */
+  --ra-sm: 6px; --ra-md: 8px; --ra-lg: 12px;
+  --hair: #edf2f0;                        /* pemisah baris di dalam kartu */
+  --line: #e3eae7;                        /* tepi kartu */
+  --micro: 11px;                          /* label kapital kecil */
 }
 
 * { box-sizing: border-box; }
