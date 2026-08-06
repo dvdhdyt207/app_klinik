@@ -20,7 +20,7 @@ const d = computed(() => k.derived)
           <div class="ln-name">{{ m.name }}</div>
           <div class="ln-cat">{{ m.cat }}</div>
         </div>
-        <div><span class="ln-qty" :style="{ color: m.qtyColor }">{{ m.qty }}</span><span class="ln-unit"> {{ m.unit }}</span></div>
+        <div class="qty"><span class="ln-qty" :style="{ color: m.qtyColor }">{{ m.qty }}</span><span class="ln-unit">{{ m.unit }}</span></div>
       </div>
     </div>
   </div>
@@ -30,16 +30,20 @@ const d = computed(() => k.derived)
 .screen { padding: 20px 18px 24px; }
 .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
 .title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); }
-.add { height: 40px; padding: 0 15px; border-radius: 20px; background: var(--accent); color: #fff; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; box-shadow: 0 6px 16px rgba(47,108,224,.3); }
+.add { height: 40px; padding: 0 15px; border-radius: 20px; background: var(--accent); color: #fff; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; box-shadow: 0 6px 16px rgba(18,128,106,.3); }
+.add:hover { background: var(--accent-hover); }
 .plus { font-size: 19px; }
 .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
 .list { display: flex; flex-direction: column; gap: 9px; }
 .line { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
 .grow { flex: 1; min-width: 0; }
+.qty { flex-shrink: 0; white-space: nowrap; }
 .ln-name { font-size: 14.5px; font-weight: 600; color: var(--ink); }
 .ln-cat { font-size: 12px; color: var(--muted); }
 .ln-qty { font-size: 16px; font-weight: 800; }
-.ln-unit { font-size: 11px; font-weight: 600; color: var(--muted); }
+/* Jaraknya diatur di sini, bukan lewat spasi di dalam template: kompilator
+   Vue merapatkan spasi tepi, dan hasilnya terbaca "8butir". */
+.ln-unit { font-size: 11px; font-weight: 600; color: var(--muted); margin-left: 4px; }
 
 @media (min-width: 920px) {
   .screen { padding: 8px 4px 24px; }

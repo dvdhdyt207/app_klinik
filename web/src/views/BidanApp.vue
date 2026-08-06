@@ -40,6 +40,14 @@ const k = useKlinik()
 
       <TabBar />
 
+      <!-- Lapisan gelap di belakang dialog (hanya layar lebar; di HP modalnya
+           menutupi layar penuh sehingga tidak ada yang perlu diredupkan).
+           Sebelumnya ini dikerjakan trik `box-shadow: 0 0 0 100vmax` pada
+           .fullmodal — nilainya terpasang tapi hasilnya tidak terlihat, dan
+           bayangan tidak bisa diklik untuk menutup. Elemen sungguhan lebih
+           mudah ditebak dan sekaligus memberi cara keluar dari dialog. -->
+      <div v-if="k.modal" class="backdrop" @click="k.closeModal()" />
+
       <VisitModal />
       <PickModal />
       <JadwalModal />
@@ -52,8 +60,19 @@ const k = useKlinik()
 
 <style scoped>
 .loading { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
-.spinner { width: 38px; height: 38px; border-radius: 50%; border: 3px solid #dbe6f7; border-top-color: var(--accent); animation: spin 1s linear infinite; }
+.spinner { width: 38px; height: 38px; border-radius: 50%; border: 3px solid var(--accent-soft); border-top-color: var(--accent); animation: spin 1s linear infinite; }
 .loading-text { color: var(--muted); font-size: 13px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .errbar { width: 100%; background: var(--danger-bg); color: var(--danger); padding: 10px; font-size: 12.5px; font-weight: 600; text-align: center; flex-shrink: 0; }
+
+.backdrop { display: none; }
+@media (min-width: 920px) {
+  .backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 40;   /* .fullmodal memakai z-index 50 */
+    background: rgba(20, 33, 28, .45);
+    animation: backdrop-in .15s ease;
+  }
+}
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 </style>

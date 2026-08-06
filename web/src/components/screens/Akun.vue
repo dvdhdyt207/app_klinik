@@ -199,8 +199,11 @@ async function keluar() {
   font-size: 13px; font-weight: 600; border-radius: 10px;
   padding: 9px 11px; margin: 0 0 12px;
 }
+/* Sama dengan Login.vue: pesan server diawali huruf kecil, dibesarkan lewat
+   tampilan supaya teks aslinya tetap utuh. */
+.galat::first-letter { text-transform: uppercase; }
 .berhasil {
-  background: #e8f6ee; color: var(--green);
+  background: var(--accent-soft); color: var(--accent-ink);
   font-size: 13px; font-weight: 600; border-radius: 10px;
   padding: 9px 11px; margin: 0 0 12px;
 }
@@ -215,9 +218,19 @@ async function keluar() {
 .tombol.keluar { background: var(--danger-bg); color: var(--danger); }
 .tombol.keluar:hover { background: var(--danger); color: #fff; }
 
-/* Layar lebar: kartu tidak ikut melar selebar monitor — baris sepanjang itu
-   melelahkan dibaca, dan kolom sandi selebar 1200px terlihat salah. */
+/* Layar lebar: kartu berdampingan, bukan satu kolom sempit yang menyisakan
+   separuh layar kosong. Tiap kartu tetap dibatasi lebarnya oleh jumlah kolom —
+   kolom sandi selebar 1200px terlihat salah, dan baris sepanjang itu
+   melelahkan dibaca. */
 @media (min-width: 920px) {
-  .screen { padding: 8px 4px 24px; max-width: 560px; }
+  .screen {
+    padding: 8px 4px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    max-width: 1000px;
+    align-items: start;
+  }
+  .head { grid-column: 1 / -1; }
+  .judul { font-size: 26px; }
 }
 </style>

@@ -16,11 +16,13 @@ const isK = computed(() => k.rekapTab === 'kunjungan')
 
     <template v-if="isK">
       <div class="stat-row">
-        <div class="big-card dark">
+        <!-- Penekanan mengikuti arti: jumlah kunjungan itu angka pokok layar
+             ini, obat yang keluar adalah turunannya. -->
+        <div class="big-card solid">
           <div class="big-num">{{ d.totalVisits }}</div>
           <div class="big-lbl">Total kunjungan</div>
         </div>
-        <div class="big-card blue">
+        <div class="big-card soft">
           <div class="big-num">{{ d.totalMedsOut }}</div>
           <div class="big-lbl">Obat dikeluarkan</div>
         </div>
@@ -58,16 +60,19 @@ const isK = computed(() => k.rekapTab === 'kunjungan')
 <style scoped>
 .screen { padding: 20px 18px 24px; }
 .title { margin: 0 0 16px; font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); }
-.seg { display: flex; background: #e9eef5; border-radius: 14px; padding: 4px; margin-bottom: 18px; }
+.seg { display: flex; background: var(--fill); border-radius: 14px; padding: 4px; margin-bottom: 18px; }
 .seg-btn { flex: 1; text-align: center; padding: 9px 0; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); }
-.seg-btn.active { background: #fff; color: var(--ink); }
+.seg-btn.active { background: #fff; color: var(--ink); box-shadow: var(--shadow-sm); }
 
 .stat-row { display: flex; gap: 10px; margin-bottom: 14px; }
-.big-card { flex: 1; border-radius: 16px; padding: 15px; color: #fff; }
-.big-card.dark { background: var(--ink); }
-.big-card.blue { background: var(--accent); }
+.big-card { flex: 1; border-radius: var(--r-md); padding: 15px; }
+/* Dulu kartu kiri hitam pekat dan kanan biru — dua warna yang tidak punya arti
+   apa pun, cuma supaya berbeda. Sekarang keduanya teal, bedanya tingkat
+   penekanan: yang berisi angka utama lebih pekat. */
+.big-card.soft { background: var(--accent-soft); color: var(--accent-ink); }
+.big-card.solid { background: var(--accent); color: #fff; }
 .big-num { font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
-.big-lbl { font-size: 11.5px; opacity: .8; font-weight: 600; }
+.big-lbl { font-size: 11.5px; opacity: .85; font-weight: 600; }
 .recap-head { font-size: 14px; font-weight: 700; color: var(--ink); margin: 8px 2px; }
 
 .list { display: flex; flex-direction: column; gap: 9px; }
@@ -86,8 +91,11 @@ const isK = computed(() => k.rekapTab === 'kunjungan')
 .low-sub { font-size: 12px; color: var(--muted); }
 
 @media (min-width: 920px) {
-  .screen { padding: 8px 4px 24px; max-width: 760px; }
+  .screen { padding: 8px 4px 24px; }
   .title { font-size: 26px; }
-  .list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  /* Pemilih tab dan kartu angka tidak ikut melebar sampai ujung layar —
+     tombol selebar 500px tidak lebih mudah ditekan, hanya lebih aneh. */
+  .seg, .stat-row { max-width: 620px; }
+  .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; align-items: start; }
 }
 </style>

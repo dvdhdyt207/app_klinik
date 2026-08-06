@@ -36,20 +36,21 @@ const d = computed(() => k.derived)
 .screen { padding: 20px 18px 24px; }
 .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
 .title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); }
-.fab { width: 40px; height: 40px; border-radius: 20px; background: var(--accent); color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(47,108,224,.3); }
+.fab { width: 40px; height: 40px; border-radius: 20px; background: var(--accent); color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(18,128,106,.3); }
+.fab:hover { background: var(--accent-hover); }
 .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
 .list { display: flex; flex-direction: column; gap: 10px; }
 .vcard { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 15px; }
 .vhead { display: flex; align-items: center; gap: 12px; }
-.vavatar { width: 40px; height: 40px; border-radius: 12px; background: #dbe6f7; color: var(--accent); font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+.vavatar { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; background: var(--accent-soft); color: var(--accent-ink); font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; }
 .grow { flex: 1; min-width: 0; }
 .vname { font-size: 15px; font-weight: 700; color: var(--ink); }
 .vmeta { font-size: 12.5px; color: var(--muted); }
 .vdate { font-size: 11.5px; color: var(--muted); font-weight: 600; }
 .vgejala { margin-top: 9px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; }
 .glabel { color: var(--muted2); font-weight: 700; }
-.vchips { margin-top: 11px; padding-top: 11px; border-top: 1px solid #eef2f7; display: flex; flex-wrap: wrap; gap: 6px; }
-.vchip { background: var(--fill); border-radius: 8px; padding: 5px 9px; font-size: 12px; font-weight: 600; color: #3b4a5e; }
+.vchips { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 6px; }
+.vchip { background: var(--fill); border-radius: 8px; padding: 5px 9px; font-size: 12px; font-weight: 600; color: var(--text-secondary); }
 
 @media (min-width: 920px) {
   .screen { padding: 8px 4px 24px; }

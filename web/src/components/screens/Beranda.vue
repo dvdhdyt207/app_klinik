@@ -1,11 +1,13 @@
 <script setup>
 import { computed } from 'vue'
 import { useKlinik } from '../../stores/klinik'
-import { hhmm, untilLabel } from '../../lib/format'
+import { hhmm, untilLabel, monogram } from '../../lib/format'
 import Toggle from '../ui/Toggle.vue'
 
 const k = useKlinik()
 
+const namaKlinik = computed(() => k.profil.clinic || k.status.clinic || 'Klinik')
+const inisial = computed(() => monogram(namaKlinik.value))
 const st = computed(() => k.status)
 const away = computed(() => !st.value.bidanHadir)
 const d = computed(() => k.derived)
@@ -15,13 +17,16 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
 <template>
   <div class="screen">
     <!-- header -->
+    <!-- Di HP, sidebar tidak ada, jadi identitas klinik muncul di sini.
+         Di desktop sidebar sudah menampilkannya — mengulanginya membuat nama
+         klinik tertulis dua kali bersebelahan di layar yang sama. -->
     <div class="b-head">
       <div class="head">
-        <div>
-          <div class="eyebrow">KLINIK</div>
-          <div class="clinic">Bidan Pit</div>
+        <div class="head-id">
+          <div class="clinic">{{ namaKlinik }}</div>
         </div>
-        <button class="avatar" type="button" title="Akun" @click="k.goScreen('akun')">P</button>
+        <h1 class="page-title">Beranda</h1>
+        <button class="avatar" type="button" title="Setelan" @click="k.goScreen('akun')">{{ inisial }}</button>
       </div>
     </div>
 
@@ -164,33 +169,37 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
 .b-visit { order: 5; }
 .b-recent { order: 3; }
 
-.head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 1.3px; color: var(--muted); }
-.clinic { font-size: 22px; font-weight: 800; letter-spacing: -.4px; margin-top: 2px; color: var(--ink); }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.head-id { min-width: 0; }
+.page-title { display: none; }
+.clinic { font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); line-height: 1.2; overflow-wrap: anywhere; }
 /* font-size ikut disebut: reset global hanya mewariskan font-family, dan sejak
    avatar jadi <button> ukuran hurufnya akan mengecil ke bawaan tombol. */
-.avatar { width: 42px; height: 42px; border-radius: 21px; background: #dbe6f7; color: var(--accent); font-size: inherit; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.avatar { width: 42px; height: 42px; border-radius: 21px; flex-shrink: 0; background: var(--accent-soft); color: var(--accent-ink); font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 
 .row-between { display: flex; align-items: center; justify-content: space-between; }
-.hero-present { display: block; width: 100%; text-align: left; background: var(--accent); border-radius: 20px; padding: 20px; box-shadow: 0 12px 26px rgba(47,108,224,.28); }
+.hero-present { display: block; width: 100%; text-align: left; background: linear-gradient(160deg, var(--accent) 0%, var(--accent-press) 100%); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow-accent); }
 .hp-label { font-size: 12.5px; font-weight: 600; color: #fff; opacity: .85; }
 .hp-title { font-size: 20px; font-weight: 800; color: #fff; margin-top: 14px; }
 .hp-sub { font-size: 12.5px; color: #fff; opacity: .8; margin-top: 3px; }
 
-.hero-away { background: #fff; border: 1px solid var(--border2); border-radius: 20px; padding: 20px; }
-.ha-label { font-size: 12.5px; font-weight: 600; color: var(--label); }
+/* Sama dengan halaman pasien: "tidak ada" punya warnanya sendiri (amber),
+   bukan kartu putih yang harus dibaca dulu untuk tahu keadaannya. */
+.hero-away { background: var(--away-soft); border: 1px solid var(--away-line); border-radius: var(--r-lg); padding: 20px; }
+.ha-label { font-size: 12.5px; font-weight: 600; color: var(--away-ink); }
 .ha-title { font-size: 20px; font-weight: 800; color: var(--ink); margin-top: 14px; }
 .ha-note { font-size: 13px; color: var(--text-secondary); margin-top: 5px; font-weight: 600; }
-.ha-pill { margin-top: 12px; background: var(--fill2); border-radius: 12px; padding: 11px 13px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.ha-pill { margin-top: 12px; background: var(--card); border: 1px solid var(--away-line); border-radius: 12px; padding: 11px 13px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
 .pill-strong { font-size: 13px; color: var(--ink); font-weight: 700; }
 .pill-muted { font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .ha-actions { display: flex; gap: 8px; margin-top: 12px; }
-.chip { flex: 1; text-align: center; padding: 9px 0; border-radius: 10px; background: var(--fill); color: #3b4a5e; font-size: 12.5px; font-weight: 700; }
-.back-btn { width: 100%; margin-top: 10px; padding: 13px; border-radius: 12px; background: var(--green); color: #fff; font-size: 14px; font-weight: 700; }
+.chip { flex: 1; text-align: center; padding: 9px 0; border-radius: 10px; background: var(--card); border: 1px solid var(--away-line); color: var(--away-ink); font-size: 12.5px; font-weight: 700; }
+.back-btn { width: 100%; margin-top: 10px; padding: 13px; border-radius: 12px; background: var(--accent); color: #fff; font-size: 14px; font-weight: 700; }
+.back-btn:hover { background: var(--accent-hover); }
 
-.weblink { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; background: #eef4ff; border: 1px solid #d9e5fb; border-radius: 14px; padding: 11px 14px; }
-.wl-left { display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 600; color: var(--accent); }
-.chev { font-size: 18px; color: var(--accent); }
+.weblink { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; background: var(--accent-soft); border: 1px solid var(--border2); border-radius: var(--r-md); padding: 11px 14px; }
+.wl-left { display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 600; color: var(--accent-ink); }
+.chev { font-size: 18px; color: var(--accent-ink); }
 
 .stats { display: flex; gap: 10px; margin-top: 14px; }
 .stat { flex: 1; }
@@ -211,10 +220,14 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
 .ln-unit { font-size: 11px; font-weight: 600; color: var(--muted); }
 
 .rvline { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 10px 14px; }
-.rv-ava { width: 34px; height: 34px; border-radius: 10px; background: #dbe6f7; color: var(--accent); font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rv-ava { width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-ink); font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .rv-date { font-size: 11.5px; color: var(--muted); font-weight: 600; }
 
-.visit-btn { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 22px; background: var(--ink); color: #fff; border-radius: 16px; padding: 15px; font-size: 15px; font-weight: 700; }
+/* Tindakan utama layar ini. Dulu hitam (var(--ink)) — netral gelap membuatnya
+   terbaca sebagai tombol asing, bukan sebagai tombol yang paling sering
+   ditekan bidan. */
+.visit-btn { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 22px; background: var(--accent); color: #fff; border-radius: var(--r-md); padding: 15px; font-size: 15px; font-weight: 700; box-shadow: var(--shadow-md); transition: background .15s ease; }
+.visit-btn:hover { background: var(--accent-hover); }
 
 /* ---------- DESKTOP: 2 kolom independen (tanpa coupling tinggi) ---------- */
 @media (min-width: 920px) {
@@ -231,9 +244,12 @@ const untilText = computed(() => { void k.now; return st.value.awayUntil ? until
   .col-b { grid-column: 2; }
   .b-recent { display: block; }
 
+  /* identitas klinik sudah ada di sidebar — di sini cukup judul halaman */
+  .head-id, .avatar { display: none; }
+  .page-title { display: block; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); }
+
   /* jarak antar-kartu diatur oleh gap kolom, jadi reset margin lama */
   .head { margin-bottom: 4px; }
-  .clinic { font-size: 26px; }
   .stats { margin-top: 0; }
   .section-head { margin: 4px 2px 12px; }
   .visit-btn { margin-top: 0; }

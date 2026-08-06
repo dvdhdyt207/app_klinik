@@ -1,6 +1,13 @@
 <script setup>
+import { computed } from 'vue'
 import { useKlinik } from '../stores/klinik'
+import { monogram } from '../lib/format'
 const k = useKlinik()
+// Nama klinik dulu ditulis mati "Bidan Pit" di sini. Bidan bisa menggantinya
+// lewat Setelan → Profil klinik, dan sidebar yang tidak ikut berubah akan
+// menyebut nama yang salah tepat di sebelah nama yang benar.
+const namaKlinik = computed(() => k.profil.clinic || k.status.clinic || 'Klinik')
+const inisial = computed(() => monogram(namaKlinik.value))
 const tabs = [
   { key: 'beranda', label: 'Beranda' },
   { key: 'kunjungan', label: 'Kunjungan' },
@@ -22,10 +29,12 @@ const icons = {
   <nav class="tabbar">
     <!-- brand (hanya desktop) -->
     <div class="brand">
-      <div class="logo">P</div>
-      <div>
-        <div class="eyebrow">KLINIK</div>
-        <div class="bname">Bidan Pit</div>
+      <div class="logo">{{ inisial }}</div>
+      <!-- Tanpa label "KLINIK" di atasnya: nama yang diketik bidan hampir
+           selalu sudah diawali kata itu ("Klinik Bidan Pit"), sehingga
+           labelnya cuma mengulang kata pertama tepat di bawahnya. -->
+      <div class="bwrap">
+        <div class="bname">{{ namaKlinik }}</div>
       </div>
     </div>
 
@@ -61,9 +70,17 @@ const icons = {
     gap: 20px;
   }
   .brand { display: flex; align-items: center; gap: 12px; padding: 4px 8px 6px; }
-  .logo { width: 42px; height: 42px; border-radius: 13px; background: var(--accent); color: #fff; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; }
-  .eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: 1.3px; color: var(--muted); }
-  .bname { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+  .logo {
+    width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+    background: linear-gradient(145deg, var(--accent) 0%, var(--accent-press) 100%);
+    color: #fff; font-weight: 800; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 5px 14px rgba(18,128,106,.26);
+  }
+  .bwrap { min-width: 0; }
+  /* Nama klinik bisa panjang ("Praktik Mandiri Bidan Pit Suryani"); tanpa ini
+     ia mendorong lebar sidebar dan menggeser seluruh isi layar. */
+  .bname { font-size: 17px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); line-height: 1.2; overflow-wrap: anywhere; }
 
   .tabs { flex-direction: column; flex: none; gap: 4px; }
   .tab {
@@ -72,7 +89,7 @@ const icons = {
     color: var(--label);
   }
   .tab:hover { background: var(--fill2); }
-  .tab.active { background: #eef4ff; color: var(--accent); }
+  .tab.active { background: var(--accent-soft); color: var(--accent-ink); }
   .tab svg { width: 20px; height: 20px; }
   .tlabel { font-size: 14.5px; font-weight: 700; }
 }
