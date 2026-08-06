@@ -32,8 +32,9 @@ export const CATALOG = [
   { name: 'Oralit', cat: 'Sachet' },
 ]
 
-// Tint kategori untuk avatar/kotak (bg + warna teks).
+// Tint kategori untuk avatar/kotak (bg + warna teks). var(), bukan hex — lihat
+// alasannya di komentar COL pada stores/klinik.js.
 export const catTint = (cat) =>
-  cat === 'Sirup' ? { bg: '#e6f3ee', ink: '#2f8a63' }
-  : cat === 'Sachet' ? { bg: '#f3edfb', ink: '#7a54c0' }
-  : { bg: '#e7eefb', ink: '#2f6ce0' }
+  cat === 'Sirup' ? { bg: 'var(--sirup-tint)', ink: 'var(--sirup-ink)' }
+  : cat === 'Sachet' ? { bg: 'var(--sachet-tint)', ink: 'var(--sachet-ink)' }
+  : { bg: 'var(--tablet-tint)', ink: 'var(--tablet-ink)' }

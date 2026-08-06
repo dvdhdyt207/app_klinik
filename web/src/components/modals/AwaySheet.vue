@@ -39,10 +39,10 @@ const opts = [
 .sub { font-size: 12.5px; color: var(--muted); margin-bottom: 18px; }
 .note { background: var(--fill2); margin: 7px 0 16px; }
 .chips { display: flex; gap: 8px; margin: 8px 0 20px; flex-wrap: wrap; }
-.chip { padding: 9px 14px; border-radius: 12px; background: var(--fill); color: #3b4a5e; font-size: 13px; font-weight: 700; }
+.chip { padding: 9px 14px; border-radius: 12px; background: var(--fill); color: var(--text-secondary); font-size: 13px; font-weight: 700; }
 .chip.sel { background: var(--ink); color: #fff; }
 .actions { display: flex; gap: 10px; }
-.btn-ghost { flex: 1; padding: 15px; border-radius: 14px; background: var(--fill); color: #3b4a5e; font-size: 15px; font-weight: 700; }
+.btn-ghost { flex: 1; padding: 15px; border-radius: 14px; background: var(--fill); color: var(--text-secondary); font-size: 15px; font-weight: 700; }
 .btn.dark { background: var(--ink); }
 .grow2 { flex: 2; }
 </style>

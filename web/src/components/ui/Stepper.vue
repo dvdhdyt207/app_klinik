@@ -13,6 +13,6 @@ defineEmits(['dec', 'inc'])
 
 <style scoped>
 .stepper { display: flex; align-items: center; border: 1px solid var(--border2); border-radius: 10px; overflow: hidden; }
-.sbtn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #3b4a5e; background: var(--fill2); }
+.sbtn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); background: var(--fill2); }
 .val { width: 34px; text-align: center; font-size: 14px; font-weight: 700; }
 </style>

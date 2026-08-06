@@ -67,6 +67,6 @@ function remove(i) { k.draft.items.splice(i, 1) }
 .grow { flex: 1; min-width: 0; }
 .it-name { font-size: 14px; font-weight: 600; color: var(--ink); }
 .it-unit { font-size: 11.5px; color: var(--muted); }
-.rm { width: 30px; height: 30px; color: #c0c8d4; font-size: 17px; }
+.rm { width: 30px; height: 30px; color: var(--disabled); font-size: 17px; }
 .footer { padding: 16px; background: #fff; border-top: 1px solid var(--border); }
 </style>

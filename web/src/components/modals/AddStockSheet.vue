@@ -55,10 +55,10 @@ function countInput(e) { k.stockCount = e.target.value.replace(/[^0-9]/g, '') }
 .chip { padding: 9px 14px; border-radius: 12px; border: 1.5px solid var(--border2); background: #fff; color: var(--label); font-size: 13px; font-weight: 700; }
 .chip.sel { border-color: var(--accent); background: var(--tablet-tint); color: var(--accent); }
 .countrow { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
-.cbtn { width: 46px; height: 46px; border-radius: 12px; background: var(--fill); color: #3b4a5e; font-size: 24px; display: flex; align-items: center; justify-content: center; }
+.cbtn { width: 46px; height: 46px; border-radius: 12px; background: var(--fill); color: var(--text-secondary); font-size: 24px; display: flex; align-items: center; justify-content: center; }
 .count { flex: 1; text-align: center; font-size: 20px; font-weight: 800; background: var(--fill2); }
 .preview { font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 20px; }
 .actions { display: flex; gap: 10px; }
-.btn-ghost { flex: 1; padding: 15px; border-radius: 14px; background: var(--fill); color: #3b4a5e; font-size: 15px; font-weight: 700; }
+.btn-ghost { flex: 1; padding: 15px; border-radius: 14px; background: var(--fill); color: var(--text-secondary); font-size: 15px; font-weight: 700; }
 .grow2 { flex: 2; }
 </style>

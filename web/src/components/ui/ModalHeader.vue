@@ -21,7 +21,7 @@ defineEmits(['back'])
 .back {
   width: 36px; height: 36px; border-radius: 18px; background: var(--fill);
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: #3b4a5e; line-height: 1; padding-bottom: 2px;
+  font-size: 20px; color: var(--text-secondary); line-height: 1; padding-bottom: 2px;
 }
 .title { flex: 1; font-size: 17px; font-weight: 800; color: var(--ink); }
 </style>

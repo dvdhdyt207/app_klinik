@@ -35,5 +35,5 @@ const d = computed(() => k.derived)
 .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .e-title { font-size: 14.5px; font-weight: 700; color: var(--ink); }
 .e-when { font-size: 12.5px; color: var(--muted); }
-.chev { font-size: 18px; color: #c0c8d4; }
+.chev { font-size: 18px; color: var(--disabled); }
 </style>

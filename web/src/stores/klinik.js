@@ -9,11 +9,18 @@ const pad = (n) => String(n).padStart(2, '0')
 const toDate = (ts) => { const d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) }
 const toTime = (ts) => { const d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()) }
 
-// Warna tokens yang dibutuhkan derivasi (nilai mentah agar bisa diikat inline).
+// Warna yang dipakai derivasi. Ditulis sebagai var() — bukan hex — supaya
+// tokens.css tetap satu-satunya sumber kebenaran warna. Nilai ini berakhir di
+// atribut style inline (`:style="{ background: m.color }"`), dan var() ikut
+// diselesaikan di sana persis seperti di stylesheet.
+//
+// Sebelumnya di sini ada hex tersalin, termasuk biru lama #2f6ce0. Akibatnya
+// mengganti palet di tokens.css tidak mengubah titik agenda dan angka stok —
+// warna yang hidup di JavaScript tidak ikut terbawa.
 const COL = {
-  danger: '#d64545', dangerBg: '#fdeaea',
-  warning: '#e0a52a', warningBg: '#fdf3df',
-  healthy: '#3fbf8f', ink: '#16202e', accent: '#2f6ce0', past: '#c0c8d4',
+  danger: 'var(--danger)', dangerBg: 'var(--danger-bg)',
+  warning: 'var(--warning)', warningBg: 'var(--warning-bg)',
+  healthy: 'var(--healthy)', ink: 'var(--ink)', accent: 'var(--accent)', past: 'var(--disabled)',
 }
 
 export const useKlinik = defineStore('klinik', () => {
@@ -164,9 +171,13 @@ export const useKlinik = defineStore('klinik', () => {
       return { ...m, unit: baseUnit(m.cat), color: danger ? COL.danger : COL.warning,
         tint: danger ? COL.dangerBg : COL.warningBg, status: danger ? 'segera dibeli' : 'perlu diperhatikan' }
     })
+    // Tiga tingkat, sama persis dengan daftar "stok menipis" di Beranda.
+    // Sebelumnya layar Stok cuma mengenal dua (aman / merah), sehingga obat yang
+    // di Beranda kuning "perlu diperhatikan" tampil merah "segera dibeli" di
+    // layar sebelah — dua jawaban berbeda untuk obat yang sama.
     const medsList = meds.map((m) => {
-      const lo = isLow(m.cat, m.qty)
-      return { ...m, unit: baseUnit(m.cat), dot: lo ? COL.danger : COL.healthy, qtyColor: lo ? COL.danger : COL.ink }
+      const warna = isDanger(m.cat, m.qty) ? COL.danger : isLow(m.cat, m.qty) ? COL.warning : COL.healthy
+      return { ...m, unit: baseUnit(m.cat), dot: warna, qtyColor: isLow(m.cat, m.qty) ? warna : COL.ink }
     })
     const visitCards = visits.map((v) => ({
       ...v, initial: (v.name || '?').trim().charAt(0).toUpperCase(),

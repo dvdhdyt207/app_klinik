@@ -1,20 +1,50 @@
-/* Design tokens Klinik Bidan Pit (dari README design handoff) */
+/* Design token Klinik Bidan Pit.
+   Palet hijau-teal (Agustus 2026), menggantikan biru korporat #2f6ce0 dari
+   design handoff pertama. Alasannya bukan selera: halaman ini dulu memakai lima
+   warna aksen sekaligus — logo biru, hero hijau, tombol WhatsApp hijau lain,
+   titik agenda biru dan kuning. Satu keluarga warna dipilih supaya warna
+   kembali punya arti, bukan sekadar hiasan.
+
+   Aturan yang dipegang di seluruh aplikasi:
+   - teal  = identitas klinik + "bidan hadir" (kabar baik, tindakan utama)
+   - amber = "bidan tidak ada" (perlu perhatian, bukan bahaya)
+   - merah = kerusakan/penghapusan saja — jangan dipakai untuk "tutup" */
 :root {
-  --accent: #2f6ce0; --accent-hover: #1f52b8;
-  --ink: #16202e;
-  --text-secondary: #5a6675; --muted: #8a97a8; --muted2: #9aa7b8; --label: #6b7688;
-  --app-bg: #f5f8fc; --card: #ffffff;
-  --border: #e7edf5; --border2: #e2e7ef; --input-border: #dde4ee;
-  --fill: #f0f4f9; --fill2: #f6f8fc;
-  --green: #1f9d57; --healthy: #3fbf8f; --whatsapp: #25a15a;
-  --danger: #d64545; --danger-bg: #fdeaea;
-  --del: #c25146; --del-bg: #fbeceb;
-  --warning: #e0a52a; --warning-bg: #fdf3df;
-  --disabled: #b9c6d8;
-  --tablet-tint: #e7eefb; --tablet-ink: #2f6ce0;
-  --sirup-tint: #e6f3ee; --sirup-ink: #2f8a63;
-  --sachet-tint: #f3edfb; --sachet-ink: #7a54c0;
-  --patient-bg: #eef1f6;
+  /* --- identitas --- */
+  --accent: #12806a; --accent-hover: #0c6553; --accent-press: #094e40;
+  --accent-soft: #e4f1ec;   /* latar tint di atas kartu putih */
+  --accent-ink: #0b5a4a;    /* teks di atas --accent-soft */
+
+  /* --- tinta & latar --- */
+  --ink: #14211c;
+  --text-secondary: #4e5f58; --muted: #7c8c86; --muted2: #93a29c; --label: #61726b;
+  --app-bg: #f2f7f5; --patient-bg: #edf3f1; --card: #ffffff;
+  --border: #e2ebe7; --border2: #dce7e2; --input-border: #d6e2dd;
+  --fill: #eff5f2; --fill2: #f5f9f7;
+
+  /* --- keadaan --- */
+  --green: #12806a;         /* "hadir" = warna identitas, bukan hijau ketiga */
+  --healthy: #3fbf8f;
+  --whatsapp: #12806a;      /* sengaja BUKAN hijau WhatsApp: ikon + tulisannya
+                               sudah cukup dikenali, dan hijau kedua di sebelah
+                               teal membuat keduanya terlihat seperti kesalahan */
+  --away: #b8791c; --away-soft: #fbf1df; --away-ink: #7a4e0e; --away-line: #f0e0c2;
+  --danger: #c6453f; --danger-bg: #fbebea;
+  --del: #b8453c; --del-bg: #faeae9;
+  --warning: #b8791c; --warning-bg: #fbf1df;
+  --disabled: #b4c3bd;
+
+  /* --- kategori obat (tetap saling beda, tapi tidak menyaingi aksen) --- */
+  --tablet-tint: #e8edf7; --tablet-ink: #3a5fa8;
+  --sirup-tint: #e4f1ec; --sirup-ink: #12806a;
+  --sachet-tint: #f2edfa; --sachet-ink: #7050b4;
+
+  /* --- bentuk --- */
+  --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 26px;
+  --shadow-sm: 0 1px 2px rgba(20, 33, 28, .05);
+  --shadow-md: 0 6px 18px rgba(20, 33, 28, .07);
+  --shadow-lg: 0 20px 46px rgba(20, 33, 28, .10);
+  --shadow-accent: 0 16px 38px rgba(18, 128, 106, .26);
 }
 
 * { box-sizing: border-box; }
@@ -30,6 +60,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 input, textarea { font-family: inherit; }
 a { color: var(--accent); text-decoration: none; }
 
+/* Fokus keyboard harus terlihat — sebelumnya `outline: none` di .field
+   menghapusnya tanpa pengganti. */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 @keyframes pit-pulse {
   0%   { box-shadow: 0 0 0 0 rgba(255,255,255,.55); }
   70%  { box-shadow: 0 0 0 14px rgba(255,255,255,0); }
@@ -38,11 +72,15 @@ a { color: var(--accent); text-decoration: none; }
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes modal-in { from { transform: translateX(6%); opacity: .4; } to { transform: translateX(0); opacity: 1; } }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
 /* ---------- primitive dipakai ulang ---------- */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   padding: 14px;
 }
 .field {
@@ -55,18 +93,21 @@ a { color: var(--accent); text-decoration: none; }
   background: #fff;
   outline: none;
 }
-.field:focus { border-color: var(--accent); }
+.field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .field::placeholder { color: var(--muted2); }
 .label { font-size: 12.5px; font-weight: 700; color: var(--label); }
 .btn {
   display: flex; align-items: center; justify-content: center; gap: 9px;
-  width: 100%; border-radius: 14px; padding: 15px;
+  width: 100%; border-radius: var(--r-md); padding: 15px;
   font-size: 15px; font-weight: 700; text-align: center; color: #fff;
   background: var(--accent);
+  transition: background .15s ease;
 }
+.btn:hover:not(:disabled):not(.is-disabled) { background: var(--accent-hover); }
+.btn:active:not(:disabled):not(.is-disabled) { background: var(--accent-press); }
 .btn:disabled, .btn.is-disabled { background: var(--disabled); cursor: default; }
 .dashed {
-  border: 1.5px dashed #d3dce8; border-radius: 14px;
+  border: 1.5px dashed var(--border2); border-radius: var(--r-md);
   padding: 18px; text-align: center; color: var(--muted2); font-size: 13px;
 }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -114,8 +155,10 @@ a { color: var(--accent); text-decoration: none; }
     position: fixed; inset: auto;
     top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: min(580px, 92vw); max-height: 86vh;
-    border-radius: 20px; overflow: hidden; z-index: 50;
-    box-shadow: 0 24px 60px rgba(16,22,30,.35), 0 0 0 100vmax rgba(16,22,30,.45);
+    border-radius: var(--r-lg); overflow: hidden; z-index: 50;
+    /* Lapisan gelapnya elemen tersendiri di BidanApp.vue, bukan spread
+       box-shadow raksasa seperti dulu. */
+    box-shadow: 0 24px 60px rgba(20,33,28,.35);
     animation: dialog-in .2s ease;
   }
 }

@@ -3,8 +3,8 @@
 defineProps({
   on: Boolean,
   variant: { type: String, default: 'big' },
-  trackOn: { type: String, default: '#2f6ce0' },
-  trackOff: { type: String, default: '#d6dbe4' },
+  trackOn: { type: String, default: 'var(--accent)' },
+  trackOff: { type: String, default: 'var(--disabled)' },
 })
 </script>
 
