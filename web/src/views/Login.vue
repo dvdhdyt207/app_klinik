@@ -1,7 +1,9 @@
 <script setup>
-import { ref, onMounted, useTemplateRef } from 'vue'
+import { ref, computed, onMounted, useTemplateRef } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../stores/auth'
+import { api } from '../api/client'
+import { monogram } from '../lib/format'
 
 const router = useRouter()
 const route = useRoute()
@@ -13,7 +15,21 @@ const galat = ref('')
 const mengirim = ref(false)
 const kolomSandi = useTemplateRef('kolomSandi')
 
-onMounted(() => kolomSandi.value?.focus())
+// Nama klinik dulu ditulis mati "Bidan Pit" di sini. Diambil dari
+// /api/public/status — satu-satunya sumber yang terbuka tanpa sesi, yang
+// memang tujuannya dibaca sebelum siapa pun masuk. Gagal mengambilnya tidak
+// menghalangi login: kolom sandi tetap bisa diisi, hanya namanya jadi umum.
+const namaKlinik = ref('')
+const judul = computed(() => namaKlinik.value || 'Klinik')
+const inisial = computed(() => monogram(judul.value))
+
+onMounted(async () => {
+  kolomSandi.value?.focus()
+  try {
+    const st = await api.publicStatus()
+    namaKlinik.value = st?.clinic || ''
+  } catch { /* nama klinik cuma hiasan di layar ini — jangan halangi login */ }
+})
 
 async function kirim() {
   if (mengirim.value) return
@@ -39,41 +55,48 @@ async function kirim() {
 
 <template>
   <div class="masuk-bg">
-    <form class="masuk-kartu" @submit.prevent="kirim">
-      <div class="eyebrow">KLINIK</div>
-      <h1 class="judul">Bidan Pit</h1>
-      <p class="sub">Masuk untuk membuka catatan klinik.</p>
+    <div class="kolom-tengah">
+      <!-- Tanda pengenal klinik di luar kartu: sebelumnya layar ini tidak
+           memuat satu pun penanda visual, sehingga terlihat sama saja dengan
+           halaman masuk aplikasi mana pun. -->
+      <header class="merek">
+        <div class="logo" aria-hidden="true">{{ inisial }}</div>
+        <h1 class="judul">{{ judul }}</h1>
+        <p class="sub">Masuk untuk membuka catatan klinik.</p>
+      </header>
 
-      <label class="label" for="u">Nama pengguna</label>
-      <input
-        id="u"
-        v-model.trim="username"
-        class="kolom"
-        autocomplete="username"
-        autocapitalize="none"
-        spellcheck="false"
-        required
-      />
+      <form class="masuk-kartu" @submit.prevent="kirim">
+        <label class="label" for="u">Nama pengguna</label>
+        <input
+          id="u"
+          v-model.trim="username"
+          class="kolom"
+          autocomplete="username"
+          autocapitalize="none"
+          spellcheck="false"
+          required
+        />
 
-      <label class="label" for="p">Kata sandi</label>
-      <input
-        id="p"
-        ref="kolomSandi"
-        v-model="password"
-        class="kolom"
-        type="password"
-        autocomplete="current-password"
-        required
-      />
+        <label class="label" for="p">Kata sandi</label>
+        <input
+          id="p"
+          ref="kolomSandi"
+          v-model="password"
+          class="kolom"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
 
-      <p v-if="galat" class="galat" role="alert">{{ galat }}</p>
+        <p v-if="galat" class="galat" role="alert">{{ galat }}</p>
 
-      <button class="tombol" type="submit" :disabled="mengirim || !password">
-        {{ mengirim ? 'Memeriksa…' : 'Masuk' }}
-      </button>
+        <button class="tombol" type="submit" :disabled="mengirim || !password">
+          {{ mengirim ? 'Memeriksa…' : 'Masuk' }}
+        </button>
+      </form>
 
       <router-link class="tautan" to="/">← Lihat halaman status bidan</router-link>
-    </form>
+    </div>
   </div>
 </template>
 
@@ -81,40 +104,64 @@ async function kirim() {
 .masuk-bg {
   min-height: 100dvh;
   display: flex; align-items: center; justify-content: center;
-  background: var(--app-bg); padding: 24px;
+  padding: 24px;
+  background: var(--patient-bg);
+  /* Cahaya teal samar di belakang kartu. Tanpa ini layar masuk di monitor
+     lebar hanyalah satu kartu kecil di tengah bidang datar yang luas. */
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(18, 128, 106, .10), transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(18, 128, 106, .06), transparent 55%);
 }
-.masuk-kartu {
-  width: 100%; max-width: 380px;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 28px 24px;
-  box-shadow: 0 8px 28px rgba(22, 32, 46, .06);
+.kolom-tengah {
+  width: 100%; max-width: 400px;
   display: flex; flex-direction: column;
 }
-.eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: var(--muted); }
-.judul { font-size: 24px; font-weight: 800; color: var(--ink); margin: 2px 0 4px; }
-.sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px; }
+
+.merek { text-align: center; margin-bottom: 22px; }
+.logo {
+  width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 18px;
+  background: linear-gradient(145deg, var(--accent) 0%, var(--accent-press) 100%);
+  color: #fff; font-weight: 800; font-size: 19px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 24px rgba(18, 128, 106, .28);
+}
+.judul { font-size: 25px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); margin: 0; line-height: 1.2; overflow-wrap: anywhere; }
+.sub { font-size: 13.5px; color: var(--text-secondary); margin: 6px 0 0; }
+
+.masuk-kartu {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 24px;
+  box-shadow: var(--shadow-md);
+  display: flex; flex-direction: column;
+}
 .label { font-size: 12px; font-weight: 700; color: var(--label); margin-bottom: 6px; }
 .kolom {
   border: 1px solid var(--input-border); border-radius: 10px;
-  padding: 11px 12px; font: inherit; font-size: 15px; color: var(--ink);
+  padding: 12px; font: inherit; font-size: 15px; color: var(--ink);
   background: var(--fill2); margin-bottom: 14px; width: 100%;
 }
-.kolom:focus { outline: 2px solid var(--accent); outline-offset: 1px; background: var(--card); }
+.kolom:focus { outline: none; border-color: var(--accent); background: var(--card); box-shadow: 0 0 0 3px var(--accent-soft); }
 .galat {
   background: var(--danger-bg); color: var(--danger);
   font-size: 13px; font-weight: 600;
-  border-radius: 10px; padding: 9px 11px; margin: 0 0 14px;
+  border-radius: 10px; padding: 10px 12px; margin: 0 0 14px;
 }
+/* Pesan galat datang apa adanya dari server dan diawali huruf kecil
+   ("nama pengguna atau sandi salah"). Dibesarkan di sini, bukan di JavaScript:
+   ini urusan tampilan, dan teks aslinya tetap utuh untuk log. */
+.galat::first-letter { text-transform: uppercase; }
 .tombol {
   background: var(--accent); color: #fff; border: 0;
-  border-radius: 10px; padding: 12px; font: inherit; font-size: 15px; font-weight: 700;
-  cursor: pointer;
+  border-radius: var(--r-md); padding: 13px; font: inherit; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: background .15s ease;
+  margin-top: 2px;
 }
 .tombol:hover:not(:disabled) { background: var(--accent-hover); }
+.tombol:active:not(:disabled) { background: var(--accent-press); }
 .tombol:disabled { background: var(--disabled); cursor: default; }
 .tautan {
-  margin-top: 18px; text-align: center;
-  font-size: 13px; color: var(--muted); text-decoration: none;
+  margin-top: 20px; text-align: center;
+  font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
 }
 .tautan:hover { color: var(--accent); }
 </style>
