@@ -63,6 +63,18 @@ export function countdown(ts) {
   const h = Math.floor(m / 60), mm = m % 60; return '± ' + h + ' jam' + (mm ? ' ' + mm + ' mnt' : '') + ' lagi'
 }
 
+// Monogram logo dari nama klinik. Dipakai halaman pasien, sidebar Bidan App,
+// dan avatar Beranda — satu fungsi, karena nama klinik bisa diubah bidan lewat
+// Setelan dan logo yang tidak ikut berubah akan jadi satu-satunya bagian
+// aplikasi yang menyebut klinik yang salah.
+const KATA_UMUM = new Set(['klinik', 'praktik', 'bidan', 'mandiri', 'pmb'])
+export function monogram(nama) {
+  const kata = String(nama || '').split(/\s+/).filter(Boolean)
+  const inti = kata.filter((w) => !KATA_UMUM.has(w.toLowerCase()))
+  const dipakai = (inti.length ? inti : kata).slice(0, 2)
+  return dipakai.map((w) => w[0]).join('').toUpperCase() || 'K'
+}
+
 // util konversi date/time input (untuk Form Agenda)
 export const toDateStr = (ts) => { const d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) }
 export const toTimeStr = (ts) => { const d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()) }
