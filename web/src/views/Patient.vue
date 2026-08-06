@@ -17,6 +17,13 @@ const upcoming = computed(() => {
   const n = Date.now()
   return (st.value.events || []).filter((e) => e.endTs >= n).sort((a, b) => a.startTs - b.startTs).slice(0, 4)
 })
+// Ketiganya datang dari /api/public/status, tidak lagi ditulis mati di sini.
+// Fallback dipakai hanya sebelum permintaan pertama selesai — bukan sebagai
+// nilai cadangan permanen, karena nilai cadangan yang salah persis itulah yang
+// dulu tampil ke pasien.
+const namaKlinik = computed(() => st.value?.clinic || 'Klinik')
+const alamat = computed(() => st.value?.alamat || '')
+const whatsapp = computed(() => st.value?.whatsapp || '')
 const updated = computed(() => { void now.value; return st.value ? relTime(st.value.ts) : '' })
 const cd = computed(() => { void now.value; return st.value?.awayUntil ? countdown(st.value.awayUntil) : '' })
 
@@ -35,7 +42,7 @@ onUnmounted(() => { clearInterval(pollTimer); clearInterval(tickTimer) })
       <div class="brand">
         <div class="logo">P</div>
         <div>
-          <div class="bname">Klinik Bidan Pit</div>
+          <div class="bname">{{ namaKlinik }}</div>
           <div class="btag">Praktik Bidan Mandiri · melayani 24 jam</div>
         </div>
       </div>
@@ -80,16 +87,19 @@ onUnmounted(() => { clearInterval(pollTimer); clearInterval(tickTimer) })
       </div>
 
       <!-- lokasi & kontak -->
-      <div class="card2">
+      <!-- Seluruh kartunya hilang kalau bidan belum mengisi apa pun. Sebelumnya
+           di sini tertulis alamat dan nomor karangan; halaman yang jujur
+           menampilkan lebih sedikit lebih baik daripada halaman yang mengarang. -->
+      <div v-if="alamat || whatsapp" class="card2">
         <div class="c-title mb12">Lokasi &amp; Kontak</div>
-        <div class="addr">Jl. Melati No. 12, Desa Sukamaju<br />Kec. Cikarang, Kab. Bekasi</div>
-        <a class="wa" href="https://wa.me/6281234567890" target="_blank" rel="noopener">
+        <div v-if="alamat" class="addr">{{ alamat }}</div>
+        <a v-if="whatsapp" class="wa" :href="'https://wa.me/' + whatsapp" target="_blank" rel="noopener">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm0 2a8 8 0 11-4.2 14.8l-.3-.2-2.8.8.8-2.7-.2-.3A8 8 0 0112 4z"/></svg>
           Hubungi via WhatsApp
         </a>
       </div>
 
-      <div class="foot">Status &amp; jadwal diperbarui otomatis oleh Bidan Pit</div>
+      <div class="foot">Status &amp; jadwal diperbarui otomatis oleh {{ namaKlinik }}</div>
     </div>
   </div>
 </template>
@@ -134,7 +144,9 @@ onUnmounted(() => { clearInterval(pollTimer); clearInterval(tickTimer) })
 .ev-title { font-size: 14.5px; font-weight: 700; line-height: 1.3; }
 .ev-when { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
 .empty { font-size: 13.5px; color: var(--muted); font-weight: 600; }
-.addr { font-size: 14px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 16px; }
+/* pre-line: alamat diketik bidan di textarea, jadi enter-nya harus tetap jadi
+   baris baru. Sebelumnya alamatnya <br /> yang ditulis tangan di template. */
+.addr { font-size: 14px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 16px; white-space: pre-line; }
 .wa { display: flex; align-items: center; justify-content: center; gap: 9px; background: var(--whatsapp); color: #fff; border-radius: 14px; padding: 14px; font-size: 14.5px; font-weight: 700; }
 .foot { text-align: center; font-size: 11.5px; color: #a3adba; padding: 6px 0 2px; font-weight: 600; }
 </style>

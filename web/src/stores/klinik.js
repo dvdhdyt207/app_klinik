@@ -200,9 +200,19 @@ export const useKlinik = defineStore('klinik', () => {
   })
 
   const status = computed(() => data.value.status || {})
+  const profil = computed(() => data.value.profil || { clinic: '', alamat: '', whatsapp: '' })
+
+  // ---- profil klinik ----
+  // Server mengembalikan bentuk yang sudah dinormalkan (nomor jadi 62…), jadi
+  // hasilnya dipakai langsung alih-alih menebak apa yang tersimpan.
+  async function simpanProfil(body) {
+    const baru = await api.setProfil(body)
+    data.value = { ...data.value, profil: baru, status: { ...data.value.status, clinic: baru.clinic } }
+    return baru
+  }
 
   return {
-    data, loading, error, now, status,
+    data, loading, error, now, status, profil, simpanProfil,
     screen, modal, rekapTab, pickContext, query,
     draft, awayDraft, eventDraft, stockTarget, stockUnitIdx, stockCount,
     derived, refresh,

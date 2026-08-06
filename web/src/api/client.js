@@ -45,6 +45,7 @@ export const api = {
   getState: () => req('/state'),
   publicStatus: () => req('/public/status'),
   setStatus: (body) => req('/status', { method: 'PUT', body: JSON.stringify(body) }),
+  setProfil: (body) => req('/profil', { method: 'PUT', body: JSON.stringify(body) }),
   createEvent: (body) => req('/events', { method: 'POST', body: JSON.stringify(body) }),
   updateEvent: (id, body) => req('/events/' + id, { method: 'PUT', body: JSON.stringify(body) }),
   deleteEvent: (id) => req('/events/' + id, { method: 'DELETE' }),

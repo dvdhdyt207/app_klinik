@@ -11,6 +11,17 @@ type Status struct {
 	Clinic     string `json:"clinic"`
 }
 
+// Profil = keterangan klinik yang tampil di halaman pasien dan bisa diubah
+// bidan sendiri lewat Bidan App.
+//
+// Clinic dibaca dari clinic_status.clinic, sisanya dari clinic_profile —
+// digabung di sini supaya frontend tidak perlu tahu bahwa asalnya dua tabel.
+type Profil struct {
+	Clinic   string `json:"clinic"`
+	Alamat   string `json:"alamat"`
+	WhatsApp string `json:"whatsapp"` // hanya angka, diawali 62; kosong = sembunyikan
+}
+
 // Event = agenda/jadwal bidan.
 type Event struct {
 	ID      string `json:"id"`
@@ -49,6 +60,7 @@ type Visit struct {
 // State = snapshot penuh untuk bootstrap Bidan App (GET /api/state).
 type State struct {
 	Status    Status     `json:"status"`
+	Profil    Profil     `json:"profil"`
 	Events    []Event    `json:"events"`
 	Medicines []Medicine `json:"medicines"`
 	Visits    []Visit    `json:"visits"`
@@ -61,5 +73,7 @@ type PublicStatus struct {
 	AwayUntil *int64  `json:"awayUntil"`
 	Ts        int64   `json:"ts"`
 	Clinic    string  `json:"clinic"`
+	Alamat    string  `json:"alamat"`
+	WhatsApp  string  `json:"whatsapp"`
 	Events    []Event `json:"events"`
 }

@@ -64,6 +64,31 @@ CREATE TABLE IF NOT EXISTS clinic_status (
   CONSTRAINT chk_status_singleton CHECK (id = 1)
 ) ENGINE=InnoDB;
 
+-- Profil klinik yang tampil di halaman pasien (baris tunggal, id selalu = 1).
+--
+-- Tabel TERPISAH, bukan kolom tambahan di clinic_status. Alasannya praktis:
+-- proyek ini tidak punya migration runner — schema.sql dijalankan ulang apa
+-- adanya — dan MySQL 8 tidak mengenal ALTER TABLE ... ADD COLUMN IF NOT EXISTS.
+-- Tabel baru dengan CREATE TABLE IF NOT EXISTS aman dijalankan di database
+-- kosong maupun di database produksi yang sudah berisi data.
+--
+-- Nama kliniknya sendiri TIDAK di sini: ia sudah tinggal di clinic_status.clinic
+-- sejak awal, dan menyalinnya ke sini akan membuat dua sumber kebenaran untuk
+-- satu nama yang sama.
+--
+-- Alamat & nomor boleh kosong, dan itu bukan kelalaian: halaman pasien
+-- menyembunyikan bagiannya kalau kosong. Tidak menampilkan apa-apa lebih baik
+-- daripada menampilkan alamat karangan, yang justru keadaan sebelum tabel ini
+-- ada — `Jl. Melati No. 12` dan `wa.me/6281234567890` tertulis mati di
+-- Patient.vue dan sudah terlihat publik.
+CREATE TABLE IF NOT EXISTS clinic_profile (
+  id         TINYINT      NOT NULL PRIMARY KEY DEFAULT 1,
+  alamat     VARCHAR(255) NOT NULL DEFAULT '',
+  whatsapp   VARCHAR(20)  NOT NULL DEFAULT '',   -- hanya angka, diawali 62
+  updated_ts BIGINT       NOT NULL,
+  CONSTRAINT chk_profile_singleton CHECK (id = 1)
+) ENGINE=InnoDB;
+
 -- Agenda / jadwal bidan
 CREATE TABLE IF NOT EXISTS events (
   id       VARCHAR(40)  NOT NULL PRIMARY KEY,

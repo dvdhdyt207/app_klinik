@@ -82,6 +82,7 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.HandleFunc("GET /api/catalog", s.wajibLogin(s.catalog))
 	mux.HandleFunc("GET /api/state", s.wajibLogin(s.state))
 	mux.HandleFunc("PUT /api/status", s.wajibLogin(s.putStatus))
+	mux.HandleFunc("PUT /api/profil", s.wajibLogin(s.putProfil))
 	mux.HandleFunc("POST /api/events", s.wajibLogin(s.createEvent))
 	mux.HandleFunc("PUT /api/events/{id}", s.wajibLogin(s.updateEvent))
 	mux.HandleFunc("DELETE /api/events/{id}", s.wajibLogin(s.deleteEvent))

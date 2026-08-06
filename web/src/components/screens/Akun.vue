@@ -1,11 +1,49 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../../stores/auth'
+import { useKlinik } from '../../stores/klinik'
 import { api } from '../../api/client'
 
 const auth = useAuth()
 const router = useRouter()
+const k = useKlinik()
+
+// ---------- profil klinik ----------
+const profil = ref({ clinic: '', alamat: '', whatsapp: '' })
+const profilSiap = ref(false)
+const profilGalat = ref('')
+const profilBerhasil = ref('')
+const menyimpanProfil = ref(false)
+
+// Isi form sekali saja, saat data server pertama tiba. Menyalin ulang setiap
+// kali store menyegarkan dirinya (tiap 15 detik) akan menimpa ketikan bidan di
+// tengah jalan.
+watch(() => k.profil, (p) => {
+  if (profilSiap.value || !p) return
+  if (!p.clinic && !p.alamat && !p.whatsapp && k.loading) return
+  profil.value = { clinic: p.clinic || '', alamat: p.alamat || '', whatsapp: p.whatsapp || '' }
+  profilSiap.value = true
+}, { immediate: true, deep: true })
+
+async function simpanProfil() {
+  if (menyimpanProfil.value) return
+  profilGalat.value = ''
+  profilBerhasil.value = ''
+  menyimpanProfil.value = true
+  try {
+    const baru = await k.simpanProfil({ ...profil.value })
+    // Nomor ditampilkan dalam bentuk yang benar-benar tersimpan, bukan yang
+    // tadi diketik — supaya bidan melihat sendiri 0812… berubah jadi 62812…
+    // alih-alih mengira nomornya tidak jadi disimpan.
+    profil.value = { clinic: baru.clinic, alamat: baru.alamat, whatsapp: baru.whatsapp }
+    profilBerhasil.value = 'Tersimpan. Halaman pasien ikut berubah.'
+  } catch (e) {
+    profilGalat.value = e.message || 'Gagal menyimpan profil'
+  } finally {
+    menyimpanProfil.value = false
+  }
+}
 
 // Sama dengan SandiMinimal di server (internal/api/akun.go). Diperiksa di sini
 // hanya supaya bidan tahu sebelum menekan tombol — server tetap memeriksanya
@@ -66,12 +104,40 @@ async function keluar() {
 <template>
   <div class="screen">
     <div class="head">
-      <div class="eyebrow">AKUN</div>
-      <div class="judul">{{ namaPengguna }}</div>
+      <div class="eyebrow">SETELAN</div>
+      <div class="judul">{{ profil.clinic || 'Klinik' }}</div>
     </div>
 
+    <form class="kartu" @submit.prevent="simpanProfil">
+      <div class="k-judul">Profil klinik</div>
+      <p class="k-sub">Tampil di halaman yang dibuka pasien.</p>
+
+      <label class="label" for="nama-klinik">Nama klinik</label>
+      <input id="nama-klinik" v-model="profil.clinic" class="kolom" maxlength="120" required />
+
+      <label class="label" for="alamat">Alamat</label>
+      <textarea id="alamat" v-model="profil.alamat" class="kolom area" maxlength="255"
+        rows="3" placeholder="Kosongkan bila belum ingin ditampilkan" />
+
+      <label class="label" for="wa">Nomor WhatsApp</label>
+      <input id="wa" v-model="profil.whatsapp" class="kolom" inputmode="tel"
+        placeholder="081234567890" />
+      <p class="petunjuk">
+        Boleh ditulis 0812…, +62 812…, atau pakai tanda hubung — akan
+        diseragamkan sendiri. Dikosongkan berarti tombol WhatsApp tidak
+        ditampilkan ke pasien.
+      </p>
+
+      <p v-if="profilGalat" class="galat" role="alert">{{ profilGalat }}</p>
+      <p v-if="profilBerhasil" class="berhasil" role="status">{{ profilBerhasil }}</p>
+
+      <button class="tombol" type="submit" :disabled="menyimpanProfil || !profil.clinic.trim()">
+        {{ menyimpanProfil ? 'Menyimpan…' : 'Simpan profil' }}
+      </button>
+    </form>
+
     <form class="kartu" @submit.prevent="kirim">
-      <div class="k-judul">Ganti kata sandi</div>
+      <div class="k-judul">Ganti kata sandi <span class="k-akun">akun {{ namaPengguna }}</span></div>
       <p class="k-sub">
         Setelah diganti, perangkat lain yang masih masuk akan dikeluarkan.
         Perangkat ini tetap masuk.
@@ -115,6 +181,8 @@ async function keluar() {
   display: flex; flex-direction: column;
 }
 .k-judul { font-size: 15px; font-weight: 800; color: var(--ink); }
+.k-akun { font-size: 12px; font-weight: 600; color: var(--muted); }
+.area { resize: vertical; min-height: 72px; line-height: 1.45; }
 .k-sub { font-size: 12.5px; color: var(--text-secondary); margin: 4px 0 16px; line-height: 1.45; }
 
 .label { font-size: 12px; font-weight: 700; color: var(--label); margin-bottom: 6px; }

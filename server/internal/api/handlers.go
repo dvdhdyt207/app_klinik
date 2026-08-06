@@ -46,8 +46,15 @@ func (s *Server) state(w http.ResponseWriter, r *http.Request) {
 		serverError(w, err)
 		return
 	}
+	alamat, wa, err := s.profilRow(ctx)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
 	writeJSON(w, http.StatusOK, models.State{
-		Status: status, Events: events, Medicines: meds, Visits: visits,
+		Status: status,
+		Profil: models.Profil{Clinic: status.Clinic, Alamat: alamat, WhatsApp: wa},
+		Events: events, Medicines: meds, Visits: visits,
 	})
 }
 

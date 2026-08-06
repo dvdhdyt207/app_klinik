@@ -148,12 +148,41 @@ func (s *Server) statusPayload(ctx context.Context) (models.PublicStatus, error)
 	if err != nil {
 		return models.PublicStatus{}, err
 	}
+	alamat, wa, err := s.profilRow(ctx)
+	if err != nil {
+		return models.PublicStatus{}, err
+	}
 	return models.PublicStatus{
 		Hadir:     st.BidanHadir,
 		AwayNote:  st.AwayNote,
 		AwayUntil: st.AwayUntil,
 		Ts:        st.UpdatedTs,
 		Clinic:    st.Clinic,
+		Alamat:    alamat,
+		WhatsApp:  wa,
 		Events:    events,
 	}, nil
+}
+
+// profilRow membaca baris clinic_profile, membuatnya bila belum ada.
+//
+// Dibuat saat dibaca, bukan lewat INSERT di schema.sql, karena database
+// produksi sudah berjalan sebelum tabel ini ada — dan tabel yang masih kosong
+// tidak boleh membuat halaman pasien gagal dimuat. Baris kosong berarti "belum
+// diisi", dan halaman pasien memang menyembunyikan bagian yang kosong.
+func (s *Server) profilRow(ctx context.Context) (alamat, whatsapp string, err error) {
+	err = s.DB.QueryRowContext(ctx,
+		"SELECT alamat, whatsapp FROM clinic_profile WHERE id = 1").Scan(&alamat, &whatsapp)
+	if err == sql.ErrNoRows {
+		if _, err = s.DB.ExecContext(ctx,
+			"INSERT INTO clinic_profile (id, alamat, whatsapp, updated_ts) VALUES (1,'','',?)",
+			nowMs()); err != nil {
+			return "", "", err
+		}
+		return "", "", nil
+	}
+	if err != nil {
+		return "", "", err
+	}
+	return alamat, whatsapp, nil
 }
