@@ -79,16 +79,12 @@ func (s *Server) Routes() *http.ServeMux {
 	// --- wajib masuk ---
 	mux.HandleFunc("GET /api/auth/me", s.wajibLogin(s.me))
 	mux.HandleFunc("POST /api/auth/password", s.wajibLogin(s.gantiSandi))
-	mux.HandleFunc("GET /api/catalog", s.wajibLogin(s.catalog))
 	mux.HandleFunc("GET /api/state", s.wajibLogin(s.state))
 	mux.HandleFunc("PUT /api/status", s.wajibLogin(s.putStatus))
 	mux.HandleFunc("PUT /api/profil", s.wajibLogin(s.putProfil))
 	mux.HandleFunc("POST /api/events", s.wajibLogin(s.createEvent))
 	mux.HandleFunc("PUT /api/events/{id}", s.wajibLogin(s.updateEvent))
 	mux.HandleFunc("DELETE /api/events/{id}", s.wajibLogin(s.deleteEvent))
-	mux.HandleFunc("POST /api/medicines/stock", s.wajibLogin(s.addStock))
-	mux.HandleFunc("PUT /api/medicines/{id}", s.wajibLogin(s.updateMedicine))
-	mux.HandleFunc("DELETE /api/medicines/{id}", s.wajibLogin(s.deleteMedicine))
 	mux.HandleFunc("POST /api/visits", s.wajibLogin(s.createVisit))
 
 	return mux

@@ -28,12 +28,6 @@ type event struct {
 	startTs int64
 	endTs   int64
 }
-type medicine struct {
-	id   string
-	name string
-	cat  string
-	qty  int
-}
 type visitItem struct {
 	name string
 	qty  int
@@ -51,7 +45,7 @@ type visit struct {
 func main() {
 	_ = godotenv.Load()
 
-	// Perkakas ini meng-TRUNCATE tabel kunjungan, obat, dan agenda. Dijalankan
+	// Perkakas ini meng-TRUNCATE tabel kunjungan dan agenda. Dijalankan
 	// tanpa sadar di server produksi, yang terhapus adalah data klinik
 	// sungguhan dan tidak ada jalan kembali. Menolak jalan di produksi jauh
 	// lebih murah daripada mengandalkan ingatan orang yang sedang buru-buru.
@@ -72,17 +66,9 @@ func main() {
 		{"e1", "Posyandu Desa Sukamaju", 0, atMs(sot, 13, 0), atMs(sot, 15, 0)},
 		{"e2", "Keluar kota — acara keluarga", 1, sotMs + dayMs, sotMs + 3*dayMs},
 	}
-	medicines := []medicine{
-		{"m1", "Paracetamol sirup", "Sirup", 2},
-		{"m2", "Amoxicillin 500mg", "Tablet", 6},
-		{"m3", "Vitamin B Complex", "Tablet", 14},
-		{"m4", "Paracetamol 500mg", "Tablet", 240},
-		{"m5", "Ibuprofen 400mg", "Tablet", 85},
-		{"m6", "Cetirizine 10mg", "Tablet", 40},
-		{"m7", "Amoxicillin sirup", "Sirup", 9},
-		{"m8", "Antasida", "Tablet", 120},
-		{"m9", "Oralit", "Sachet", 60},
-	}
+	// Tidak ada daftar obat yang di-seed: daftar obat bukan tabel tersendiri
+	// lagi. Nama obat pada kunjungan di bawah inilah yang nanti muncul sebagai
+	// saran di layar Cari Obat.
 	visits := []visit{
 		{"v1", "Siti Aminah", 27, nowMs - 2*3600000, "Demam 2 hari, batuk kering",
 			[]visitItem{{"Paracetamol sirup", 1, "botol"}}},
@@ -104,7 +90,6 @@ func main() {
 		"SET FOREIGN_KEY_CHECKS = 0",
 		"TRUNCATE TABLE visit_items",
 		"TRUNCATE TABLE visits",
-		"TRUNCATE TABLE medicines",
 		"TRUNCATE TABLE events",
 		"TRUNCATE TABLE clinic_status",
 		"SET FOREIGN_KEY_CHECKS = 1",
@@ -126,12 +111,6 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	for _, m := range medicines {
-		if _, err := conn.Exec("INSERT INTO medicines (id,name,cat,qty) VALUES (?,?,?,?)",
-			m.id, m.name, m.cat, m.qty); err != nil {
-			log.Fatal(err)
-		}
-	}
 	for _, v := range visits {
 		if _, err := conn.Exec("INSERT INTO visits (id,name,age,gejala,ts) VALUES (?,?,?,?,?)",
 			v.id, v.name, v.age, v.gejala, v.ts); err != nil {
@@ -147,5 +126,5 @@ func main() {
 	if err := conn.Commit(); err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Seed selesai: %d agenda, %d obat, %d kunjungan.", len(events), len(medicines), len(visits))
+	log.Printf("Seed selesai: %d agenda, %d kunjungan.", len(events), len(visits))
 }

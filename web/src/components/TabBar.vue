@@ -9,21 +9,22 @@ const k = useKlinik()
 const namaKlinik = computed(() => k.profil.clinic || k.status.clinic || 'Klinik')
 const inisial = computed(() => monogram(namaKlinik.value))
 
-// Empat tujuan harian. "Setelan" TIDAK ada di sini: ia dibuka lewat avatar di
+// Tiga tujuan harian. "Setelan" TIDAK ada di sini: ia dibuka lewat avatar di
 // Beranda (HP) atau baris di dasar sidebar (desktop). Sebelumnya ia jadi tab
 // kelima, sederajat dengan pekerjaan yang dilakukan bidan tiap hari — padahal
 // profil klinik dan ganti sandi disentuh beberapa kali setahun.
+//
+// "Stok" dulu tab ketiga. Ia dilepas bersama seluruh pengelolaan persediaan:
+// yang dicatat klinik ini cukup obat apa yang diberikan ke pasien.
 const tabs = [
   { key: 'beranda', label: 'Beranda' },
   { key: 'kunjungan', label: 'Kunjungan' },
-  { key: 'stok', label: 'Stok' },
   { key: 'rekap', label: 'Rekap' },
 ]
 // ikon garis sederhana (gaya Feather)
 const icons = {
   beranda: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
   kunjungan: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>',
-  stok: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
   rekap: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
   setelan: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
 }
@@ -51,12 +52,15 @@ const icons = {
         <span class="tlabel">{{ t.label }}</span>
       </button>
 
-      <!-- Tindakan utama duduk DI DALAM navigasi, di tengah, bukan sebagai tombol
-           di dasar satu layar. Mencatat kunjungan adalah alasan aplikasi ini ada;
-           dulu ia hanya terjangkau dari Beranda. Di HP tombol ini disisipkan di
-           tengah baris tab lewat `order`. -->
+      <!-- Tindakan utama duduk DI DALAM navigasi, bukan sebagai tombol di dasar
+           satu layar. Mencatat kunjungan adalah alasan aplikasi ini ada; dulu ia
+           hanya terjangkau dari Beranda. Di HP tombol ini disisipkan di antara
+           tab lewat `order`, dan menempati satu petak selebar tab supaya jarak
+           antar-ikon tetap rata. -->
       <button class="aksi-hp" aria-label="Catat kunjungan baru" @click="k.openVisit()">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span class="aksi-bulat" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
       </button>
     </div>
 
@@ -88,19 +92,24 @@ const icons = {
 .tab.active { color: var(--accent); }
 .tlabel { font-size: 10px; font-weight: 700; letter-spacing: -.01em; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Tombol tindakan disisipkan di tengah: dua tab, tombol, dua tab. */
+/* Tombol tindakan disisipkan setelah dua tab pertama: Beranda, Kunjungan,
+   tombol, Rekap. Ia ikut `flex: 1` seperti tab supaya keempat petak sama lebar
+   dan jarak antar-ikon rata — dengan lebar tetap, tombolnya berdiri lebih rapat
+   ke tab sebelahnya dan barisnya terbaca miring ke satu sisi. */
 .tabs .tab:nth-child(1) { order: 1; }
 .tabs .tab:nth-child(2) { order: 2; }
 .aksi-hp {
-  order: 3; flex-shrink: 0;
-  width: 50px; height: 50px; margin: 0 6px; border-radius: 16px;
+  order: 3; flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.aksi-bulat {
+  width: 50px; height: 50px; border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
   background: var(--accent); color: #fff;
   transition: background .15s ease;
 }
-.aksi-hp:active { background: var(--accent-press); }
+.aksi-hp:active .aksi-bulat { background: var(--accent-press); }
 .tabs .tab:nth-child(3) { order: 4; }
-.tabs .tab:nth-child(4) { order: 5; }
 
 /* ---- desktop: sidebar kiri ---- */
 @media (min-width: 920px) {

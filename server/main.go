@@ -44,6 +44,20 @@ func daftar(v string) []string {
 func spaHandler(dir string) http.Handler {
 	fileServer := http.FileServer(http.Dir(dir))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Jalur /api yang tidak terdaftar dijawab 404, bukan halaman SPA.
+		//
+		// Tanpa ini setiap /api/apa-saja jatuh ke sini dan dibalas 200 berisi
+		// index.html — termasuk POST. Endpoint yang baru saja dihapus (tambah
+		// stok, ubah/hapus obat) jadi tampak "berhasil": aplikasi versi lama
+		// yang masih terbuka di browser mengirim permintaannya, menerima 200,
+		// dan baru gagal saat mencoba membaca JSON dari HTML — dengan pesan
+		// yang tidak menyinggung sebab sesungguhnya sama sekali.
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{"error":"endpoint tidak dikenal"}`))
+			return
+		}
 		clean := filepath.Clean(r.URL.Path)
 		full := filepath.Join(dir, clean)
 		if info, err := os.Stat(full); err == nil && !info.IsDir() {

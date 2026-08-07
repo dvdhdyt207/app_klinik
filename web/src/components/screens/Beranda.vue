@@ -65,25 +65,29 @@ const hariIni = computed(() => { void k.now; return tanggalPanjang(Date.now()) }
       </div>
     </section>
 
-    <!-- ===== ringkasan hari ini: kartu tersendiri, tidak menyatu dgn status ===== -->
+    <!-- ===== ringkasan: kartu tersendiri, tidak menyatu dgn status =====
+         Baris "Obat menipis" dilepas bersama pengelolaan stok. Penggantinya
+         bukan angka obat yang lain, melainkan angka kunjungan — itu satu-satunya
+         hitungan yang masih dipegang aplikasi ini. -->
     <section class="b-angka">
       <div class="kartu ringkas">
-        <p class="rk-label">Hari ini</p>
+        <p class="rk-label">Ringkasan</p>
         <div class="rk-rows">
-          <div class="rk-row">
+          <button class="rk-row is-link" @click="k.goScreen('kunjungan')">
             <span class="rk-num">{{ d.todayCount }}</span>
-            <span class="rk-lbl">Kunjungan tercatat</span>
-          </div>
-          <button class="rk-row is-link" @click="k.goScreen('stok')">
-            <span class="rk-num" :class="{ 'is-warn': d.lowCount > 0 }">{{ d.lowCount }}</span>
-            <span class="rk-lbl">Obat menipis</span>
+            <span class="rk-lbl">Kunjungan hari ini</span>
+            <svg class="rk-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="rk-row is-link" @click="k.goScreen('rekap')">
+            <span class="rk-num">{{ d.totalVisits }}</span>
+            <span class="rk-lbl">Total kunjungan</span>
             <svg class="rk-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
       </div>
     </section>
 
-    <!-- ===== tiga daftar sederajat ===== -->
+    <!-- ===== dua daftar sederajat ===== -->
     <section class="b-recent">
       <div class="sec-head">
         <h2 class="sec-title">Kunjungan terakhir</h2>
@@ -101,26 +105,6 @@ const hariIni = computed(() => { void k.now; return tanggalPanjang(Date.now()) }
           </li>
         </ul>
         <p v-else class="kosong">Belum ada kunjungan tercatat</p>
-      </div>
-    </section>
-
-    <section class="b-low">
-      <div class="sec-head">
-        <h2 class="sec-title">Stok menipis</h2>
-        <button class="sec-link" @click="k.goScreen('stok')">Semua</button>
-      </div>
-      <div class="kartu isi">
-        <ul v-if="d.low.length" class="rows">
-          <li v-for="m in d.low" :key="m.id" class="row">
-            <span class="dot" :style="{ background: m.color }" aria-hidden="true" />
-            <span class="grow">
-              <span class="r-name">{{ m.name }}</span>
-              <span class="r-sub">{{ m.cat }} · {{ m.status }}</span>
-            </span>
-            <span class="r-side r-qty" :style="{ color: m.color }">{{ m.qty }}<i class="r-unit">{{ m.unit }}</i></span>
-          </li>
-        </ul>
-        <p v-else class="kosong">Semua stok aman</p>
       </div>
     </section>
 
@@ -211,7 +195,6 @@ const hariIni = computed(() => { void k.now; return tanggalPanjang(Date.now()) }
 }
 .rk-row + .rk-row { border-top: 1px solid var(--hair); }
 .rk-num { font-size: 22px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); line-height: 1; min-width: 30px; }
-.rk-num.is-warn { color: var(--away); }
 .rk-lbl { flex: 1; font-size: 13px; color: var(--text-secondary); }
 .rk-chev { color: var(--muted2); flex-shrink: 0; }
 .rk-row.is-link:hover .rk-lbl { color: var(--ink); }
@@ -233,8 +216,6 @@ const hariIni = computed(() => { void k.now; return tanggalPanjang(Date.now()) }
 .r-name { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.35; }
 .r-sub { font-size: 12px; color: var(--muted); line-height: 1.35; }
 .r-side { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; }
-.r-qty { font-size: 14.5px; font-weight: 700; }
-.r-unit { font-style: normal; font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 4px; }
 .ava {
   width: 30px; height: 30px; border-radius: var(--ra-md); flex-shrink: 0;
   background: var(--fill); color: var(--text-secondary);
@@ -257,8 +238,10 @@ const hariIni = computed(() => { void k.now; return tanggalPanjang(Date.now()) }
   .b-head   { grid-column: 1 / -1; grid-row: 1; }
   .b-status { grid-column: 1 / 3;  grid-row: 2; }   /* dua kolom */
   .b-angka  { grid-column: 3;      grid-row: 2; }   /* kartu terpisah, ada jarak */
-  .b-recent { grid-column: 1; grid-row: 3; }
-  .b-low    { grid-column: 2; grid-row: 3; }
+  /* Kunjungan terakhir mengambil dua kolom yang ditinggalkan daftar stok
+     menipis: barisnya berisi nama, umur, dan tanggal sekaligus, dan di satu
+     kolom sempit ketiganya mulai berdesakan. */
+  .b-recent { grid-column: 1 / 3; grid-row: 3; }
   .b-sched  { grid-column: 3; grid-row: 3; }
 
   /* Kartu status dan kartu ringkasan disejajarkan tingginya — keduanya sebaris

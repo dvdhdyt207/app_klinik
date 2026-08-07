@@ -3,7 +3,6 @@ import { onMounted, onUnmounted } from 'vue'
 import { useKlinik } from '../stores/klinik'
 import Beranda from '../components/screens/Beranda.vue'
 import Kunjungan from '../components/screens/Kunjungan.vue'
-import Stok from '../components/screens/Stok.vue'
 import Rekap from '../components/screens/Rekap.vue'
 import Akun from '../components/screens/Akun.vue'
 import TabBar from '../components/TabBar.vue'
@@ -11,15 +10,13 @@ import VisitModal from '../components/modals/VisitModal.vue'
 import PickModal from '../components/modals/PickModal.vue'
 import JadwalModal from '../components/modals/JadwalModal.vue'
 import EventFormModal from '../components/modals/EventFormModal.vue'
-import AddStockSheet from '../components/modals/AddStockSheet.vue'
 import AwaySheet from '../components/modals/AwaySheet.vue'
-import MedEditModal from '../components/modals/MedEditModal.vue'
 
 const k = useKlinik()
 
-// Modal yang memakai BottomSheet — keduanya sudah membawa lapisan gelapnya
-// sendiri, jadi lapisan milik layar ini tidak boleh ikut dipasang.
-const SHEET = new Set(['away', 'addstock'])
+// Modal yang memakai BottomSheet — ia sudah membawa lapisan gelapnya sendiri,
+// jadi lapisan milik layar ini tidak boleh ikut dipasang.
+const SHEET = new Set(['away'])
 
 // Esc menutup dialog. Diperlukan karena lapisan gelap sengaja TIDAK menutup
 // saat diklik: satu salah sentuh di tepi layar tidak boleh menghapus catatan
@@ -30,7 +27,6 @@ function padaEsc(e) {
   if (e.key !== 'Escape' || !k.modal) return
   if (k.modal === 'pick') k.backFromPick()
   else if (k.modal === 'event') k.backJadwal()
-  else if (k.modal === 'med') k.closeMedEdit()
   else k.closeModal()
 }
 onMounted(() => window.addEventListener('keydown', padaEsc))
@@ -53,7 +49,6 @@ onUnmounted(() => window.removeEventListener('keydown', padaEsc))
         <div class="content-wrap">
           <Beranda v-if="k.screen === 'beranda'" />
           <Kunjungan v-else-if="k.screen === 'kunjungan'" />
-          <Stok v-else-if="k.screen === 'stok'" />
           <Rekap v-else-if="k.screen === 'rekap'" />
           <Akun v-else-if="k.screen === 'akun'" />
         </div>
@@ -78,9 +73,7 @@ onUnmounted(() => window.removeEventListener('keydown', padaEsc))
       <PickModal />
       <JadwalModal />
       <EventFormModal />
-      <AddStockSheet />
       <AwaySheet />
-      <MedEditModal />
     </template>
   </div>
 </template>

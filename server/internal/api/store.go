@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	"klinikbidanpit/internal/catalog"
 	"klinikbidanpit/internal/models"
 )
 
@@ -68,26 +67,6 @@ func (s *Server) getEvents(ctx context.Context) ([]models.Event, error) {
 		events = append(events, e)
 	}
 	return events, rows.Err()
-}
-
-func (s *Server) getMedicines(ctx context.Context) ([]models.Medicine, error) {
-	rows, err := s.DB.QueryContext(ctx,
-		"SELECT id, name, cat, qty FROM medicines ORDER BY name ASC")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	meds := []models.Medicine{}
-	for rows.Next() {
-		var m models.Medicine
-		if err := rows.Scan(&m.ID, &m.Name, &m.Cat, &m.Qty); err != nil {
-			return nil, err
-		}
-		m.BaseUnit = catalog.BaseUnit(m.Cat)
-		meds = append(meds, m)
-	}
-	return meds, rows.Err()
 }
 
 func (s *Server) getVisits(ctx context.Context) ([]models.Visit, error) {

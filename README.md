@@ -2,7 +2,7 @@
 
 Aplikasi manajemen klinik untuk bidan praktik mandiri. **Website penuh** (responsif — laptop & HP):
 
-- **Bidan App** (`/app`) — **wajib login**: catat kunjungan, kelola stok obat, rekap, atur status kehadiran + jadwal.
+- **Bidan App** (`/app`) — **wajib login**: catat kunjungan (nama pasien & obat yang pernah dipakai bisa dipilih ulang), rekap kunjungan, atur status kehadiran + jadwal.
 - **Halaman Pasien** (`/`) — publik, read-only: status bidan (di klinik / keluar + perkiraan kembali) & agenda mendatang. **Tidak memuat data pasien.**
 - **Masuk** (`/masuk`) — satu akun bidan; sesi lewat cookie httpOnly yang bisa dicabut.
 

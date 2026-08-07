@@ -11,7 +11,9 @@ Dua pemakai, dua pekerjaan yang sama sekali berbeda. Rancangan yang tidak membed
 
 **Halaman pasien** (`klinik.catering-app.com`, `web/src/views/Patient.vue`) — dibuka pasien dan keluarganya untuk **satu pertanyaan**: bidannya ada atau tidak, dan kalau tidak, kapan kembali. Sering dibuka terburu-buru, di HP murah, kadang tengah malam, kadang saat ada yang mau melahirkan. Jawabannya harus terbaca dalam sekali lihat tanpa menggulir. Halaman ini bukan brosur klinik: jangan tambahkan bagian pemasaran, testimoni, atau ajakan bertindak.
 
-**Bidan App** (`bidan.catering-app.com`, `web/src/views/BidanApp.vue` + `components/screens/`) — rekam medis elektronik untuk **satu bidan praktik mandiri**. Dipakai sambil bekerja, sering satu tangan, sering berdiri, kadang jam dua pagi. Isinya rekam medis pasien orang lain. Yang menentukan mutu: seberapa cepat satu kunjungan bisa dicatat dan seberapa cepat keadaan stok terbaca — bukan seberapa indah layarnya.
+**Bidan App** (`bidan.catering-app.com`, `web/src/views/BidanApp.vue` + `components/screens/`) — rekam medis elektronik untuk **satu bidan praktik mandiri**. Dipakai sambil bekerja, sering satu tangan, sering berdiri, kadang jam dua pagi. Isinya rekam medis pasien orang lain. Yang menentukan mutu: **seberapa cepat satu kunjungan bisa dicatat** — bukan seberapa indah layarnya.
+
+Aplikasi ini **tidak mengelola stok obat**, dan itu keputusan user (7 Agustus 2026): layar Stok, rekap obat, status "stok menipis", dan kategori obat dilepas semuanya. Jangan menghidupkannya kembali, dan jangan menambahkan angka persediaan ke rancangan mana pun. Daftar obat dan daftar pasien **dibentuk dari riwayat kunjungan**: nama yang sekali dicatat muncul lagi sebagai saran berikutnya.
 
 **Halaman masuk** (`web/src/views/Login.vue`) — pintu bidan. Tidak boleh ada apa pun yang bisa menghalangi ia masuk ke rekam medisnya sendiri; hiasan yang gagal dimuat harus gagal diam-diam.
 
@@ -29,7 +31,7 @@ Sumber tunggalnya `web/src/styles/tokens.css`.
 
 ## Larangan yang paling sering dilanggar
 
-**Jangan menulis nilai warna di luar `tokens.css` — termasuk di berkas `.js`.** Nilai yang berakhir di `:style` inline pun ditulis `var(--token)`; var() ikut diselesaikan di atribut style. Pelanggaran ini pernah membuat penggantian palet tidak berpengaruh apa-apa pada titik agenda, angka stok, dan tint kategori obat, karena hex-nya hidup di `stores/klinik.js` dan `lib/catalog.js`. Kalau ada warna yang "tidak mau ikut berubah", **cari hex di berkas `.js` dulu, bukan di `.css`**.
+**Jangan menulis nilai warna di luar `tokens.css` — termasuk di berkas `.js`.** Nilai yang berakhir di `:style` inline pun ditulis `var(--token)`; var() ikut diselesaikan di atribut style. Pelanggaran ini pernah membuat penggantian palet tidak berpengaruh apa-apa pada titik agenda, angka stok, dan tint kategori obat, karena hex-nya hidup di `stores/klinik.js` dan `lib/catalog.js` (berkas itu kini `lib/obat.js`, dan tint kategorinya sudah hilang bersama stok). Kalau ada warna yang "tidak mau ikut berubah", **cari hex di berkas `.js` dulu, bukan di `.css`**.
 
 **Jangan menulis mati nama klinik.** Bidan bisa mengubahnya lewat Setelan → Profil klinik. Ambil dari `k.profil.clinic` / `k.status.clinic`; monogram lewat `monogram()` di `web/src/lib/format.js`.
 
@@ -43,7 +45,7 @@ Menyalakan tanpa MySQL: buat `web/vite.mock.config.js` sementara (salinan `vite.
 
 - bidan hadir **dan** bidan tidak ada
 - **profil kosong** (alamat & WhatsApp belum diisi) — ini keadaan produksi sekarang
-- daftar kosong: belum ada kunjungan, belum ada agenda, stok aman semua
+- daftar kosong: belum ada kunjungan, belum ada agenda, belum ada obat yang pernah dicatat (layar Cari Obat pada klinik baru)
 - galat login
 - modal/dialog terbuka
 

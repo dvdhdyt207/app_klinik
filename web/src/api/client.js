@@ -49,8 +49,5 @@ export const api = {
   createEvent: (body) => req('/events', { method: 'POST', body: JSON.stringify(body) }),
   updateEvent: (id, body) => req('/events/' + id, { method: 'PUT', body: JSON.stringify(body) }),
   deleteEvent: (id) => req('/events/' + id, { method: 'DELETE' }),
-  addStock: (body) => req('/medicines/stock', { method: 'POST', body: JSON.stringify(body) }),
-  updateMedicine: (id, body) => req('/medicines/' + id, { method: 'PUT', body: JSON.stringify(body) }),
-  deleteMedicine: (id) => req('/medicines/' + id, { method: 'DELETE' }),
   createVisit: (body) => req('/visits', { method: 'POST', body: JSON.stringify(body) }),
 }

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { api } from '../api/client'
-import { CAT, baseUnit, isLow, isDanger } from '../lib/catalog'
+import { SATUAN_BAWAAN, satuanAtau } from '../lib/obat'
 import { eventWhen, fmtDate, dayKey, dayLabel } from '../lib/format'
 
 const emptyDraft = () => ({ name: '', age: '', gejala: '', items: [] })
@@ -18,30 +18,27 @@ const toTime = (ts) => { const d = new Date(ts); return pad(d.getHours()) + ':' 
 // mengganti palet di tokens.css tidak mengubah titik agenda dan angka stok —
 // warna yang hidup di JavaScript tidak ikut terbawa.
 const COL = {
-  danger: 'var(--danger)', dangerBg: 'var(--danger-bg)',
-  warning: 'var(--warning)', warningBg: 'var(--warning-bg)',
-  healthy: 'var(--healthy)', ink: 'var(--ink)', accent: 'var(--accent)', past: 'var(--disabled)',
+  warning: 'var(--warning)', accent: 'var(--accent)', past: 'var(--disabled)',
 }
 
 export const useKlinik = defineStore('klinik', () => {
   // ---- data server ----
-  const data = ref({ status: null, events: [], medicines: [], visits: [] })
+  const data = ref({ status: null, events: [], visits: [] })
   const loading = ref(true)
   const error = ref(null)
   const now = ref(Date.now()) // di-refresh berkala agar countdown/label waktu reaktif
 
   // ---- UI state ----
   const screen = ref('beranda')
-  const modal = ref(null) // 'visit'|'pick'|'addstock'|'away'|'jadwal'|'event'
-  const rekapTab = ref('kunjungan')
-  const pickContext = ref('visit')
+  const modal = ref(null) // 'visit'|'pick'|'away'|'jadwal'|'event'
   const query = ref('')
   const draft = ref(emptyDraft())
   const awayDraft = ref({ note: '', minutes: null })
   const eventDraft = ref(null)
-  const stockTarget = ref(null)
-  const stockUnitIdx = ref(0)
-  const stockCount = ref('1')
+  // Satuan untuk obat yang namanya baru diketik di layar Cari Obat. Dipegang di
+  // sini, bukan di komponennya, supaya pilihannya tidak ikut hilang setiap kali
+  // modal dirender ulang.
+  const pickSatuan = ref(SATUAN_BAWAAN)
 
   // ---- load & polling ----
   async function refresh() {
@@ -110,88 +107,36 @@ export const useKlinik = defineStore('klinik', () => {
     eventDraft.value = null; modal.value = 'jadwal'; refresh()
   }
 
-  // ---- pick / stok ----
-  function openPickVisit() { pickContext.value = 'visit'; query.value = ''; modal.value = 'pick' }
-  function openPickStock() { pickContext.value = 'stock'; query.value = ''; modal.value = 'pick' }
-  function backFromPick() { modal.value = pickContext.value === 'visit' ? 'visit' : null }
+  // ---- pilih obat ----
+  // Satu konteks saja sekarang: obat selalu dipilih untuk catatan kunjungan.
+  // Dulu layar ini melayani dua tujuan (kunjungan & tambah stok) lewat
+  // pickContext; menambah stok sudah tidak ada.
+  function openPickVisit() { query.value = ''; pickSatuan.value = SATUAN_BAWAAN; modal.value = 'pick' }
+  function backFromPick() { modal.value = 'visit' }
 
   function pick(c) {
-    if (pickContext.value === 'visit') {
-      const items = [...draft.value.items]
-      const idx = items.findIndex((i) => i.name.toLowerCase() === c.name.toLowerCase())
-      if (idx >= 0) items[idx] = { ...items[idx], qty: items[idx].qty + 1 }
-      else items.push({ name: c.name, cat: c.cat, qty: 1, unit: baseUnit(c.cat) })
-      draft.value = { ...draft.value, items }; modal.value = 'visit'
-    } else {
-      const existing = (data.value.medicines || []).find((m) => m.name.toLowerCase() === c.name.toLowerCase())
-      stockTarget.value = existing || { id: null, name: c.name, cat: c.cat, qty: 0 }
-      stockUnitIdx.value = 0; stockCount.value = '1'; modal.value = 'addstock'
-    }
-  }
-  async function confirmAddStock() {
-    const st = stockTarget.value; if (!st) return
-    const cfg = CAT[st.cat] || CAT.Tablet
-    const mult = (cfg.units[stockUnitIdx.value] || cfg.units[0]).mult
-    const amount = (parseInt(stockCount.value, 10) || 0) * mult
-    if (amount <= 0) return
-    await api.addStock({ id: st.id, name: st.name, cat: st.cat, amount })
-    stockTarget.value = null; modal.value = null; screen.value = 'stok'; refresh()
-  }
-  function closeAddStock() { stockTarget.value = null; modal.value = null }
-
-  // ---- ubah / hapus obat ----
-  // qty disimpan sebagai string: input kosong harus terlihat kosong, bukan 0 —
-  // kalau tidak, menghapus isinya untuk mengetik ulang langsung menampilkan
-  // angka yang bukan hasil ketikan siapa pun.
-  const medDraft = ref(null)
-  const medErr = ref(null)
-  const medBusy = ref(false)
-  const medHapusConfirm = ref(false)
-
-  function openMedEdit(m) {
-    medDraft.value = { id: m.id, name: m.name, cat: m.cat, qty: String(m.qty) }
-    medErr.value = null; medHapusConfirm.value = false; modal.value = 'med'
-  }
-  function closeMedEdit() {
-    medDraft.value = null; medErr.value = null; medHapusConfirm.value = false; modal.value = null
-  }
-
-  async function saveMed() {
-    const d = medDraft.value
-    if (!d || medBusy.value) return
-    const name = (d.name || '').trim()
-    if (!name) { medErr.value = 'Nama obat tidak boleh kosong.'; return }
-    const qty = parseInt(d.qty, 10)
-    if (!Number.isFinite(qty) || qty < 0) { medErr.value = 'Jumlah harus 0 atau lebih.'; return }
-    medBusy.value = true
-    try {
-      // Pesan galat dari server dipakai apa adanya (mis. nama bentrok) — ia
-      // tahu keadaan database, sementara layar ini hanya memegang salinan.
-      await api.updateMedicine(d.id, { name, cat: d.cat, qty })
-      closeMedEdit(); refresh()
-    } catch (e) {
-      medErr.value = e.message || 'Gagal menyimpan.'
-    } finally {
-      medBusy.value = false
-    }
-  }
-
-  async function hapusMed() {
-    const d = medDraft.value
-    if (!d || medBusy.value) return
-    medBusy.value = true
-    try {
-      await api.deleteMedicine(d.id)
-      closeMedEdit(); refresh()
-    } catch (e) {
-      medErr.value = e.message || 'Gagal menghapus.'
-    } finally {
-      medBusy.value = false
-    }
+    const nama = (c.name || '').trim()
+    if (!nama) return
+    const items = [...draft.value.items]
+    const idx = items.findIndex((i) => i.name.toLowerCase() === nama.toLowerCase())
+    // Obat yang sama dipilih dua kali menambah jumlahnya, bukan membuat baris
+    // kedua dengan nama yang sama.
+    if (idx >= 0) items[idx] = { ...items[idx], qty: items[idx].qty + 1 }
+    else items.push({ name: nama, qty: 1, unit: satuanAtau(c.unit) })
+    draft.value = { ...draft.value, items }; modal.value = 'visit'
   }
 
   // ---- visit ----
   function openVisit() { draft.value = emptyDraft(); modal.value = 'visit' }
+
+  // Mengisi form dari pasien yang pernah datang. Umur ikut terisi karena itu
+  // satu-satunya keterangan lain yang tersimpan tentang orangnya — dan mengetik
+  // ulang umur pasien yang sama tiap kunjungan hanya menambah peluang salah.
+  // Nilainya tetap bisa diubah: umur berubah, dan yang tercatat harus umur saat
+  // kunjungan ini.
+  function pakaiPasien(p) {
+    draft.value = { ...draft.value, name: p.name, age: p.age ? String(p.age) : '' }
+  }
   async function saveVisit() {
     const dr = draft.value
     if (!dr.name.trim() || dr.items.length === 0) return
@@ -212,24 +157,34 @@ export const useKlinik = defineStore('klinik', () => {
   // ---- derivasi (mirror useDerived) ----
   const derived = computed(() => {
     const _ = now.value // dep agar recompute berkala
-    const meds = data.value.medicines || []
     const visits = data.value.visits || []
     const events = data.value.events || []
     const nowMs = Date.now()
 
-    const low = meds.filter((m) => isLow(m.cat, m.qty)).sort((a, b) => a.qty - b.qty).map((m) => {
-      const danger = isDanger(m.cat, m.qty)
-      return { ...m, unit: baseUnit(m.cat), color: danger ? COL.danger : COL.warning,
-        tint: danger ? COL.dangerBg : COL.warningBg, status: danger ? 'segera dibeli' : 'perlu diperhatikan' }
+    // Daftar obat & daftar pasien dibentuk dari RIWAYAT KUNJUNGAN, bukan dari
+    // tabel tersendiri: tidak ada lagi daftar obat yang harus didata lebih dulu,
+    // dan tidak ada daftar yang bisa melenceng dari apa yang benar-benar pernah
+    // dipakai. Sekali dicatat, nama itu bisa dipakai ulang.
+    //
+    // `visits` datang urut terbaru dulu (ORDER BY ts DESC), jadi kemunculan
+    // PERTAMA sebuah nama adalah pemakaian terakhirnya — itu yang disimpan.
+    const obatMap = new Map()
+    const pasienMap = new Map()
+    visits.forEach((v) => {
+      const nm = (v.name || '').trim()
+      const key = nm.toLowerCase()
+      if (nm && !pasienMap.has(key)) pasienMap.set(key, { name: nm, age: v.age, lastTs: v.ts, count: 0 })
+      if (nm) pasienMap.get(key).count++
+      ;(v.items || []).forEach((it) => {
+        const on = (it.name || '').trim()
+        const ok = on.toLowerCase()
+        if (!on || obatMap.has(ok)) return
+        obatMap.set(ok, { name: on, unit: satuanAtau(it.unit), lastTs: v.ts })
+      })
     })
-    // Tiga tingkat, sama persis dengan daftar "stok menipis" di Beranda.
-    // Sebelumnya layar Stok cuma mengenal dua (aman / merah), sehingga obat yang
-    // di Beranda kuning "perlu diperhatikan" tampil merah "segera dibeli" di
-    // layar sebelah — dua jawaban berbeda untuk obat yang sama.
-    const medsList = meds.map((m) => {
-      const warna = isDanger(m.cat, m.qty) ? COL.danger : isLow(m.cat, m.qty) ? COL.warning : COL.healthy
-      return { ...m, unit: baseUnit(m.cat), dot: warna, qtyColor: isLow(m.cat, m.qty) ? warna : COL.ink }
-    })
+    const obatDipakai = [...obatMap.values()].sort((a, b) => b.lastTs - a.lastTs)
+    const pasienDipakai = [...pasienMap.values()].sort((a, b) => b.lastTs - a.lastTs)
+
     const visitCards = visits.map((v) => ({
       ...v, initial: (v.name || '?').trim().charAt(0).toUpperCase(),
       meta: v.age + ' tahun', dateLabel: fmtDate(v.ts),
@@ -249,16 +204,14 @@ export const useKlinik = defineStore('klinik', () => {
       label: dayLabel(row.ts), count: row.count,
       patients: row.names.slice(0, 3).join(', ') + (row.names.length > 3 ? ' +' + (row.names.length - 3) : ''),
     }))
-    const totalMedsOut = visits.reduce((s, v) => s + (v.items || []).reduce((a, i) => a + i.qty, 0), 0)
-
     const allEvents = [...events].sort((a, b) => a.startTs - b.startTs).map((e) => ({
       ...e, when: eventWhen(e), past: e.endTs < nowMs,
       dot: e.endTs < nowMs ? COL.past : (e.allDay ? COL.warning : COL.accent),
     }))
     const upcoming = allEvents.filter((e) => !e.past)
 
-    return { low, medsList, visitCards, todayCount, dailyRecap, totalMedsOut, allEvents, upcoming,
-      lowCount: low.length, totalVisits: visits.length, medCount: meds.length }
+    return { obatDipakai, pasienDipakai, visitCards, todayCount, dailyRecap, allEvents, upcoming,
+      totalVisits: visits.length, hariTercatat: dailyRecap.length }
   })
 
   const status = computed(() => data.value.status || {})
@@ -275,13 +228,12 @@ export const useKlinik = defineStore('klinik', () => {
 
   return {
     data, loading, error, now, status, profil, simpanProfil,
-    screen, modal, rekapTab, pickContext, query,
-    draft, awayDraft, eventDraft, stockTarget, stockUnitIdx, stockCount,
-    medDraft, medErr, medBusy, medHapusConfirm, openMedEdit, closeMedEdit, saveMed, hapusMed,
+    screen, modal, query,
+    draft, awayDraft, eventDraft, pickSatuan,
     derived, refresh,
     setHadir, openAway, confirmAway, extend,
     openEventForm, saveEvent, deleteEvent, openJadwal, openEventNew, backJadwal,
-    openPickVisit, openPickStock, backFromPick, pick, confirmAddStock, closeAddStock,
-    openVisit, saveVisit, goScreen, closeModal,
+    openPickVisit, backFromPick, pick,
+    openVisit, saveVisit, pakaiPasien, goScreen, closeModal,
   }
 })

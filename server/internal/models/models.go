@@ -31,16 +31,12 @@ type Event struct {
 	EndTs   int64  `json:"endTs"`
 }
 
-// Medicine = stok obat. Qty selalu dalam base unit.
-type Medicine struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Cat      string `json:"cat"`
-	Qty      int    `json:"qty"`
-	BaseUnit string `json:"baseUnit"`
-}
-
 // VisitItem = obat yang diberikan pada satu kunjungan.
+//
+// Nama dan satuannya disimpan sebagai teks, berdiri sendiri: tidak ada tabel
+// daftar obat yang ia tunjuk. Sejak pengelolaan stok dilepas, riwayat inilah
+// satu-satunya sumber daftar obat — nama yang pernah dipakai muncul kembali
+// sebagai saran di layar Cari Obat.
 type VisitItem struct {
 	Name string `json:"name"`
 	Qty  int    `json:"qty"`
@@ -59,11 +55,10 @@ type Visit struct {
 
 // State = snapshot penuh untuk bootstrap Bidan App (GET /api/state).
 type State struct {
-	Status    Status     `json:"status"`
-	Profil    Profil     `json:"profil"`
-	Events    []Event    `json:"events"`
-	Medicines []Medicine `json:"medicines"`
-	Visits    []Visit    `json:"visits"`
+	Status Status  `json:"status"`
+	Profil Profil  `json:"profil"`
+	Events []Event `json:"events"`
+	Visits []Visit `json:"visits"`
 }
 
 // PublicStatus = payload halaman web pasien (bentuk "klinik_bidan_status").

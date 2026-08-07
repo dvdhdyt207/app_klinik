@@ -1,32 +1,31 @@
 <script setup>
 import { computed } from 'vue'
 import { useKlinik } from '../../stores/klinik'
-import { baseUnit, catTint } from '../../lib/catalog'
+import { SATUAN } from '../../lib/obat'
+import { fmtDate } from '../../lib/format'
 import ModalHeader from '../ui/ModalHeader.vue'
 
 const k = useKlinik()
 const q = computed(() => k.query.trim().toLowerCase())
-const meds = computed(() => k.data.medicines || [])
 
-// Daftarnya berasal dari stok sungguhan (tabel `medicines`), bukan dari katalog
-// tertulis di kode. Dulu sebaliknya: 14 obat contoh dari design handoff selalu
-// muncul di sini, termasuk obat yang tidak pernah dimiliki klinik, dan tidak
-// ada cara menghapusnya selain deploy ulang.
+// Daftarnya adalah obat yang PERNAH DIBERIKAN pada kunjungan sebelumnya —
+// bukan daftar stok, dan bukan katalog tertulis di kode. Tidak ada lagi yang
+// perlu didata lebih dulu: obat yang sekali dicatat langsung bisa dipakai ulang
+// pada kunjungan berikutnya, lengkap dengan satuan terakhirnya.
 //
-// Query kosong berarti seluruh isi stok tampil — membuka pencarian tanpa
-// mengetik apa pun sudah memperlihatkan semua yang dimiliki.
-const results = computed(() => meds.value.filter((m) => m.name.toLowerCase().includes(q.value)).map((m) => {
-  const tint = catTint(m.cat)
-  return { name: m.name, cat: m.cat, sub: m.cat + ' · stok ' + m.qty + ' ' + baseUnit(m.cat),
-    letter: m.name.charAt(0).toUpperCase(), tint: tint.bg, ink: tint.ink }
-}))
-const exact = computed(() => meds.value.some((m) => m.name.toLowerCase() === q.value))
+// Query kosong berarti seluruhnya tampil, terbaru dulu — membuka layar ini
+// tanpa mengetik apa pun sudah memperlihatkan obat yang paling sering dipakai
+// belakangan.
+const results = computed(() => k.derived.obatDipakai
+  .filter((m) => m.name.toLowerCase().includes(q.value))
+  .map((m) => ({
+    name: m.name, unit: m.unit,
+    sub: m.unit + ' · terakhir ' + fmtDate(m.lastTs),
+    letter: m.name.charAt(0).toUpperCase(),
+  })))
 
-// Membuat obat baru kini juga boleh saat mencatat kunjungan, bukan cuma saat
-// menambah stok. Dengan katalog bawaan dihapus, larangan lama berarti obat yang
-// belum sempat didata membuat kunjungan tidak bisa dicatat sama sekali — dan
-// yang hilang di situ catatan rekam medis, bukan catatan stok.
-const canCreate = computed(() => q.value.length >= 3 && !exact.value)
+const exact = computed(() => k.derived.obatDipakai.some((m) => m.name.toLowerCase() === q.value))
+const bisaBaru = computed(() => q.value.length >= 2 && !exact.value)
 </script>
 
 <template>
@@ -38,7 +37,7 @@ const canCreate = computed(() => q.value.length >= 3 && !exact.value)
     <div class="body">
       <div v-if="results.length" class="kartu">
         <button v-for="r in results" :key="r.name" class="rrow" @click="k.pick(r)">
-          <span class="ava" :style="{ background: r.tint, color: r.ink }" aria-hidden="true">{{ r.letter }}</span>
+          <span class="ava" aria-hidden="true">{{ r.letter }}</span>
           <span class="grow">
             <span class="r-name">{{ r.name }}</span>
             <span class="r-sub">{{ r.sub }}</span>
@@ -47,22 +46,32 @@ const canCreate = computed(() => q.value.length >= 3 && !exact.value)
             stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
       </div>
-      <p v-else-if="!canCreate" class="kosong">
-        {{ meds.length ? 'Tidak ada obat yang cocok.' : 'Belum ada obat di stok. Ketik nama obatnya untuk menambahkan.' }}
+      <p v-else-if="!bisaBaru" class="kosong">
+        {{ k.derived.obatDipakai.length
+          ? 'Tidak ada obat yang cocok. Ketik namanya untuk menambahkan yang baru.'
+          : 'Belum ada obat yang pernah dicatat. Ketik nama obatnya untuk menambahkan.' }}
       </p>
 
-      <button v-if="canCreate" class="createrow" @click="k.pick({ name: k.query.trim(), cat: 'Tablet' })">
-        <span class="ava is-new" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </span>
-        <span class="grow">
-          <span class="c-name">Tambah “{{ k.query }}” sebagai obat baru</span>
-          <!-- Di konteks kunjungan obat baru hanya masuk ke catatan kunjungan,
-               tidak ke stok — tidak ada jumlah yang bisa ditebak dari sana.
-               Dikatakan di sini supaya angka stok tidak terlihat "hilang". -->
-          <span class="r-sub">{{ k.pickContext === 'visit' ? 'Obat tablet · belum masuk daftar stok' : 'Obat tablet · kategori bisa diubah nanti' }}</span>
-        </span>
-      </button>
+      <!-- Obat baru: nama diketik sendiri, satuannya dipilih di sini juga.
+           Satuan ditanyakan di depan karena sesudah ini tidak ada layar mana pun
+           untuk memperbaikinya — daftar obat tidak lagi berdiri sendiri, jadi
+           yang salah satuan akan terbawa ke rekam medis kunjungan ini. -->
+      <div v-if="bisaBaru" class="baru">
+        <p class="b-judul">Belum pernah dicatat</p>
+        <div class="b-satuan" role="group" aria-label="Satuan obat">
+          <button v-for="s in SATUAN" :key="s" class="chip" :class="{ on: k.pickSatuan === s }"
+            @click="k.pickSatuan = s">{{ s }}</button>
+        </div>
+        <button class="b-aksi" @click="k.pick({ name: k.query.trim(), unit: k.pickSatuan })">
+          <span class="ava is-new" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </span>
+          <span class="grow">
+            <span class="c-name">Tambahkan “{{ k.query.trim() }}”</span>
+            <span class="r-sub">Dihitung dalam {{ k.pickSatuan }}</span>
+          </span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -76,15 +85,29 @@ const canCreate = computed(() => q.value.length >= 3 && !exact.value)
 .rrow { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; padding: 10px 14px; }
 .rrow + .rrow { border-top: 1px solid var(--hair); }
 .rrow:hover { background: var(--fill2); }
-.createrow {
-  display: flex; align-items: center; gap: 12px; text-align: left; width: 100%;
-  margin-top: 10px; padding: 12px 14px;
-  border: 1px dashed var(--line); border-radius: var(--ra-lg); background: transparent;
+
+.baru { margin-top: 14px; padding: 12px 14px 14px; border: 1px dashed var(--line); border-radius: var(--ra-lg); }
+.b-judul {
+  margin: 0 0 9px; font-size: var(--micro); font-weight: 700;
+  letter-spacing: .09em; text-transform: uppercase; color: var(--muted);
 }
-.createrow:hover { border-color: var(--accent); background: var(--fill2); }
+.b-satuan { display: flex; gap: 8px; margin-bottom: 12px; }
+.chip {
+  min-height: 34px; padding: 0 14px; border-radius: var(--ra-md);
+  border: 1px solid var(--input-border); background: var(--fill2);
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+}
+.chip:hover { color: var(--ink); }
+.chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+.b-aksi { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; }
+
+/* Avatar seragam. Dulu warnanya mengikuti kategori obat (Tablet biru, Sirup
+   teal, Sachet ungu); kategori sudah tidak ada, dan mewarnai per satuan hanya
+   akan jadi hiasan — di aplikasi ini warna dipakai sebagai isyarat. */
 .ava {
   width: 32px; height: 32px; border-radius: var(--ra-md); flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
+  background: var(--fill); color: var(--text-secondary);
   font-size: 13px; font-weight: 700;
 }
 .ava.is-new { background: var(--accent-soft); color: var(--accent-ink); }
@@ -94,5 +117,5 @@ const canCreate = computed(() => q.value.length >= 3 && !exact.value)
 .r-sub { font-size: 12px; color: var(--muted); line-height: 1.35; }
 .plus { color: var(--muted2); flex-shrink: 0; }
 .rrow:hover .plus { color: var(--accent); }
-.kosong { margin: 0; padding: 26px 18px; text-align: center; font-size: 13.5px; color: var(--muted2); }
+.kosong { margin: 0; padding: 26px 18px; text-align: center; font-size: 13.5px; color: var(--muted2); line-height: 1.5; }
 </style>

@@ -34,10 +34,11 @@
   --warning: #b8791c; --warning-bg: #fbf1df;
   --disabled: #b4c3bd;
 
-  /* --- kategori obat (tetap saling beda, tapi tidak menyaingi aksen) --- */
-  --tablet-tint: #e8edf7; --tablet-ink: #3a5fa8;
-  --sirup-tint: #e4f1ec; --sirup-ink: #12806a;
-  --sachet-tint: #f2edfa; --sachet-ink: #7050b4;
+  /* Tint kategori obat (--tablet-tint dkk) dilepas bersama kategori itu sendiri.
+     Setelah stok tidak lagi dikelola, obat tidak punya kategori — hanya satuan —
+     dan mewarnai daftar per satuan berarti memakai warna sebagai hiasan. Di
+     aplikasi ini warna adalah isyarat: teal, amber, merah, masing-masing dengan
+     satu arti. */
 
   /* --- bentuk --- */
   --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 26px;

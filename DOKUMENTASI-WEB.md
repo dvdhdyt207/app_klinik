@@ -21,7 +21,7 @@ masalah Expo Go SDK 57 (tidak perlu HP/native lagi — cukup browser).
 ```
 Browser (Vue SPA)
   ├─ '/'     Halaman Pasien   (publik, read-only, polling 10 dtk)
-  └─ '/app'  Bidan App        (privat: Beranda/Kunjungan/Stok/Rekap + modal)
+  └─ '/app'  Bidan App        (privat: Beranda/Kunjungan/Rekap + modal)
         │  fetch /api/... (URL relatif, satu origin)
         ▼
   Server Go (:4000)  ── database/sql ──►  MySQL app_klinik
@@ -39,10 +39,9 @@ server/                      # Backend Go
 ├── main.go                  # wiring: API + serve SPA (web/dist) + CORS
 ├── go.mod
 ├── .env                     # kredensial DB & PORT (JANGAN commit)
-├── migrations/schema.sql    # skema 5 tabel (idempotent)
+├── migrations/schema.sql    # skema tabel (idempotent)
 ├── cmd/seed/main.go         # `go run ./cmd/seed` — isi data contoh
 └── internal/
-    ├── catalog/catalog.go   # aturan satuan + katalog obat (mirror web)
     ├── models/models.go     # struct JSON (camelCase, sama dgn versi Node)
     ├── db/db.go             # pool koneksi MySQL dari .env
     └── api/                 # api.go (routing+helper), store.go (query), handlers.go (endpoint)
@@ -52,14 +51,14 @@ web/                         # Frontend Vue 3
 └── src/
     ├── main.js, App.vue, router/index.js
     ├── styles/tokens.css     # design tokens (CSS variables) + primitive
-    ├── lib/{catalog,format}.js   # logika bisnis JS murni (dipakai ulang dari mobile)
+    ├── lib/{obat,format}.js  # satuan obat & pemformatan tanggal
     ├── api/client.js         # fetch client (URL relatif /api)
     ├── stores/klinik.js      # Pinia — port dari mobile/src/store.js (useKlinik)
     ├── views/{Patient,BidanApp}.vue
     └── components/
         ├── ui/{Toggle,Stepper,BottomSheet,ModalHeader}.vue
-        ├── screens/{Beranda,Kunjungan,Stok,Rekap}.vue
-        ├── modals/{VisitModal,PickModal,AddStockSheet,AwaySheet,JadwalModal,EventFormModal}.vue
+        ├── screens/{Beranda,Kunjungan,Rekap,Akun}.vue
+        ├── modals/{VisitModal,PickModal,AwaySheet,JadwalModal,EventFormModal}.vue
         └── TabBar.vue
 ```
 
@@ -75,13 +74,17 @@ hanya tiga: health, halaman pasien, dan pintu masuknya sendiri.
 | POST | `/api/auth/login` | — | Masuk `{username, password}` → memasang cookie `klinik_sesi` |
 | POST | `/api/auth/logout` | — | Cabut sesi & hapus cookie |
 | GET | `/api/auth/me` | ✓ | Siapa yang sedang masuk |
-| GET | `/api/state` | ✓ | Snapshot penuh (status, events, medicines, **visits**) |
-| GET | `/api/catalog` | ✓ | Katalog obat + aturan satuan |
+| GET | `/api/state` | ✓ | Snapshot penuh (status, profil, events, **visits**) |
 | PUT | `/api/status` | ✓ | Ubah status `{bidanHadir, awayNote, awayUntil}` |
 | POST/PUT/DELETE | `/api/events[/:id]` | ✓ | CRUD agenda |
-| POST | `/api/medicines/stock` | ✓ | Tambah stok / buat obat baru `{id?, name, cat, amount}` |
-| POST | `/api/visits` | ✓ | Catat kunjungan + kurangi stok (transaksi) |
+| POST | `/api/visits` | ✓ | Catat kunjungan + obat yang diberikan (transaksi) |
 | GET | `/` , `/masuk`, `/app`, `/assets/*` | — | Halaman web (SPA) |
+
+Jalur `/api/*` yang **tidak** ada di tabel ini dijawab `404` JSON, bukan halaman
+SPA. Endpoint stok obat (`/api/catalog`, `/api/medicines/*`) sudah dihapus —
+tanpa penjaga itu, permintaan ke sana dibalas `200` berisi `index.html` dan
+aplikasi versi lama yang masih terbuka di browser akan mengira permintaannya
+berhasil.
 
 Halaman SPA-nya sendiri memang tersaji tanpa sesi — yang dijaga adalah
 **datanya**. Membuka `/app` tanpa masuk hanya menghasilkan 401 dari API, lalu
@@ -131,7 +134,7 @@ yang tidak lagi membocorkan isi database, dan `multiStatements` yang **mati** di
 koneksi aplikasi (hanya perkakas schema/seed yang memakainya).
 
 `cmd/seed` **menolak jalan saat `APP_ENV=production`** — ia meng-`TRUNCATE`
-tabel kunjungan, obat, dan agenda.
+tabel kunjungan dan agenda.
 
 ## Cara menjalankan
 
@@ -170,7 +173,8 @@ Buka `http://localhost:4000/` (pasien) & `http://localhost:4000/app` (Bidan App)
 
 ## Catatan
 - Bentuk JSON semua endpoint dijaga sama persis dengan versi Node (camelCase), jadi paritas penuh.
-- Aturan satuan ada di dua tempat (mirror): `server/internal/catalog` (validasi backend) & `web/src/lib/catalog.js` (UI) — sama seperti desain lama (mobile me-mirror backend).
+- **Tidak ada pengelolaan stok obat.** Dilepas atas permintaan bidan: yang dicatat cukup obat apa yang diberikan ke pasien, bukan sisa persediaan. Karena itu tidak ada lagi layar Stok, rekap obat, status "stok menipis", tabel `medicines`, maupun kategori obat — yang tersisa hanya satuan (`web/src/lib/obat.js`).
+- **Daftar obat & daftar pasien dibentuk dari riwayat kunjungan**, diturunkan di `stores/klinik.js` dari `visits` yang sudah dimuat `/api/state` — bukan tabel tersendiri dan bukan endpoint tersendiri. Nama yang sekali dicatat muncul sebagai saran pada kunjungan berikutnya; tidak ada daftar yang bisa melenceng dari apa yang benar-benar pernah dipakai.
 - Untuk install di HP sebagai PWA nanti: perlu HTTPS (mis. Cloudflare Tunnel) — belum dikerjakan, saat ini web-only lokal.
 - Ganti nomor WhatsApp asli di `web/src/views/Patient.vue` (`wa.me/62...`).
 ```

@@ -99,14 +99,18 @@ CREATE TABLE IF NOT EXISTS events (
   INDEX idx_events_start (start_ts)
 ) ENGINE=InnoDB;
 
--- Stok obat. qty selalu dalam BASE UNIT (butir/botol/sachet).
-CREATE TABLE IF NOT EXISTS medicines (
-  id   VARCHAR(40)                         NOT NULL PRIMARY KEY,
-  name VARCHAR(255)                        NOT NULL,
-  cat  ENUM('Tablet','Sirup','Sachet')     NOT NULL DEFAULT 'Tablet',
-  qty  INT                                 NOT NULL DEFAULT 0,
-  INDEX idx_medicines_name (name)
-) ENGINE=InnoDB;
+-- Tabel `medicines` (stok obat) SUDAH TIDAK ADA di berkas ini, dan itu
+-- disengaja: pengelolaan persediaan dilepas atas permintaan bidan — yang
+-- dicatat cukup obat apa yang diberikan ke pasien, bukan berapa sisa di lemari.
+--
+-- Database yang sudah berjalan tetap memiliki tabelnya; tidak ada satu pun
+-- kode yang menyentuhnya lagi, jadi ia hanya menganggur. Menghapusnya dilakukan
+-- sendiri bila diinginkan, SETELAH versi ini jalan dengan baik:
+--
+--   DROP TABLE medicines;
+--
+-- Riwayat kunjungan tidak terpengaruh: visit_items menyimpan nama & satuan
+-- obatnya sendiri sebagai teks, tanpa foreign key ke tabel itu.
 
 -- Kunjungan pasien
 CREATE TABLE IF NOT EXISTS visits (
