@@ -9,10 +9,18 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuth()
 
-const username = ref('bidan')
+// Sengaja KOSONG. Dulu berisi 'bidan' supaya bidan tinggal mengisi sandi —
+// tapi halaman ini terbuka ke internet, dan kolom yang sudah terisi berarti
+// menyebutkan nama penggunanya kepada siapa pun yang membukanya; yang menebak
+// tinggal mengurus sandinya saja.
+//
+// Kemudahannya tidak hilang: kolomnya bertanda autocomplete="username", jadi
+// peramban bidan sendiri tetap mengisikannya setelah sekali masuk.
+const username = ref('')
 const password = ref('')
 const galat = ref('')
 const mengirim = ref(false)
+const kolomNama = useTemplateRef('kolomNama')
 const kolomSandi = useTemplateRef('kolomSandi')
 
 // Nama klinik dulu ditulis mati "Bidan Pit" di sini. Diambil dari
@@ -24,7 +32,12 @@ const judul = computed(() => namaKlinik.value || 'Klinik')
 const inisial = computed(() => monogram(judul.value))
 
 onMounted(async () => {
-  kolomSandi.value?.focus()
+  // Kursor jatuh ke kolom yang memang masih kosong. Selama nama pengguna
+  // terisi bawaan, langsung ke sandi selalu benar; sekarang tidak lagi — dan
+  // memaksa bidan mengetuk kolom di atasnya tiap kali masuk adalah persis
+  // gangguan yang tidak boleh ada di pintu rekam medisnya sendiri.
+  if (username.value) kolomSandi.value?.focus()
+  else kolomNama.value?.focus()
   try {
     const st = await api.publicStatus()
     namaKlinik.value = st?.clinic || ''
@@ -69,6 +82,7 @@ async function kirim() {
         <label class="label" for="u">Nama pengguna</label>
         <input
           id="u"
+          ref="kolomNama"
           v-model.trim="username"
           class="kolom"
           autocomplete="username"
@@ -90,7 +104,7 @@ async function kirim() {
 
         <p v-if="galat" class="galat" role="alert">{{ galat }}</p>
 
-        <button class="tombol" type="submit" :disabled="mengirim || !password">
+        <button class="tombol" type="submit" :disabled="mengirim || !username || !password">
           {{ mengirim ? 'Memeriksa…' : 'Masuk' }}
         </button>
       </form>
